@@ -1,0 +1,39 @@
+Description:
+The main aim of the game is to control the spaceship to reach the end of the Skyroad. The space bar and directional keys are used to create an easy "jump and move" motion. Up accelerates the ship and down slows down the ship. Meters at the bottom indicate the ship's speed, Oxygen Levels, and Fuel Levels. The meter to the left indicates the level progress, next to a grav-o-meter that describes the planet's gravity (100 is the lowest, giving a weightless feeling, and 1700 is the highest, allowing no jumping). The level is restarted if the ship is destroyed, runs out of fuel or oxygen or falls off the roads.
+
+BASIC GRADING:
+The main components of this programming assignment are:
+    10% Part 0: properly turned in program (new requirements!)
+    20% Part 1: Create the skyMap and spaceship
+    25% Part 2: Add motion to the skyRoad
+    25% Part 3: Add motion to the spaceship
+    20% Part 4: Add interaction between spaceship and skyroad
+    Participation credit: You can receive participation credit (outside of this assignment) for posting your resulting imagery and video, good or bad, on the class forum!
+
+Part 0:properly turned in program (new requirements!) 
+
+Part 1: Create the skyMap and spaceship
+Create and render the models needed for the game. To display a spaceship, skymap, meters inside the spaceship. The skymap will contain a road and empty space on the sides. As the road progresses, there will be obstacles which the spaceship has to cross. Meters on the side will display ship's speed/acceleration, Fuel levels and Oxygen levels. Image in the background for space-like look. Fancy modeling is not necessary; cubes and rectangles are enough. No motion is required yet.
+
+Part 2: Add motion to the skyRoad
+Create motion in the skymap. Arrow keys Up and down will move the spaceship ahead in the skyroad. Up key will accelerate the skymap towards the viewer while down key will deaccelerate the skymap. Overall effect will be of the spaceship moving accelerating and deaccelerating in the game.
+
+Part 3: Add motion to the spaceship
+Allow the spaceship to move sideways and jump. A simple 3D box will do, though will attempt to make it more interesting. Make sure the spaceship can move in sideways using left and right arrow keys. It should also jump when spacebar is used. No need to animate the spaceship jump at this point, just going to show it first at ground level, then at jumping at a certain height. You need to support only one life for the moment.
+
+Part 4: Add interaction between spaceship and skyroad
+The spaceship now has several lives. the spaceship is destroyed if hits an obstacle, goes off the road or runs oout of fuel or oxygen.The level is restarted if the ship is destroyed, runs out of fuel or oxygen or falls off the roads.
+
+EXTRA CREDIT GRADING:
+Extra credit opportunities include the following:
+
+    2% Animate the spaceship so that it is a flowing motion of jumping from ground level to certain height.
+    2% Modeling the spaceship to look like a spaceship using different geometrical shapes.
+    2% Track and display score. You can choose any scoring scale you want.
+    3% Add planets beside the road map to make it more interesting
+    4% Multiple skymaps. When a certain number of frogs cross the road and river safely, a new level appears. Create a new model skyroad 	for next level.Since, modeling an entire new map will take a lot work, increased the extra credit to 4%. 
+    4% First person spaceship. Show the perspective from the cockpit of the spaceship which would be really cool.
+    5% Sound and music. On certain game events, e.g. game start, movement, collision, etc. play a sound effect. 
+
+
+
