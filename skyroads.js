@@ -1,8 +1,9 @@
 /* GLOBAL CONSTANTS AND VARIABLES */
-
+//https://drive.google.com/open?id=   
 /* assignment specific globals */
-const INPUT_TRIANGLES_URL = "https://raw.github.ncsu.edu/kspatil2/Skyroads/master/Triangles.json?token=AAAYCZIXEoYqzRfpJbgMoA-Pe_ZmC2IKks5YRtOMwA%3D%3D"; // triangles file loc
-const INPUT_SPHERES_URL = "https://ncsucgclass.github.io/prog3/spheres.json"; // spheres file loc
+//https://ncsucgclass.github.io/prog3/triangles.json
+const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/34ibx"; // triangles file loc
+const INPUT_SPHERES_URL = "https://api.myjson.com/bins/27jub"; // spheres file loc
 var defaultEye = vec3.fromValues(0.5,0.5,-0.5); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.5,0.5); // default view direction in world space
 var defaultUp = vec3.fromValues(0,1,0); // default view up vector
@@ -38,6 +39,10 @@ var Eye = vec3.clone(defaultEye); // eye position in world space
 var Center = vec3.clone(defaultCenter); // view direction in world space
 var Up = vec3.clone(defaultUp); // view up vector in world space
 
+var acceleration = 0.001;
+var deacceleration = 0.001;
+
+var velocity=0;
 // ASSIGNMENT HELPER FUNCTIONS
 
 // get the JSON file from the passed URL
@@ -67,6 +72,10 @@ function getJSONFile(url,descr) {
     }
 } // end get input spheres
 
+function translateModel(offset, currModel) {
+    // if (handleKeyDown.modelOn != null)
+            vec3.add(handleKeyDown.modelOn.translation,handleKeyDown.modelOn.translation,offset);   
+} // end translate model
 // does stuff when keys are pressed
 function handleKeyDown(event) {
     
@@ -74,6 +83,7 @@ function handleKeyDown(event) {
     const dirEnum = {NEGATIVE: -1, POSITIVE: 1}; // enumerated rotation direction
     
     function highlightModel(modelType,whichModel) {
+        handleKeyDown.modelOn = inputSpheres[0];
         if (handleKeyDown.modelOn != null)
             handleKeyDown.modelOn.on = false;
         handleKeyDown.whichOn = whichModel;
@@ -84,10 +94,6 @@ function handleKeyDown(event) {
         handleKeyDown.modelOn.on = true; 
     } // end highlight model
     
-    function translateModel(offset) {
-        if (handleKeyDown.modelOn != null)
-            vec3.add(handleKeyDown.modelOn.translation,handleKeyDown.modelOn.translation,offset);
-    } // end translate model
 
     function rotateModel(axis,direction) {
         if (handleKeyDown.modelOn != null) {
@@ -108,6 +114,12 @@ function handleKeyDown(event) {
     handleKeyDown.whichOn = handleKeyDown.whichOn == undefined ? -1 : handleKeyDown.whichOn; // nothing selected initially
     handleKeyDown.modelOn = handleKeyDown.modelOn == undefined ? null : handleKeyDown.modelOn; // nothing selected initially
 
+    // spaceship highlighted
+    highlightModel(modelEnum.SPHERE,(handleKeyDown.whichOn > 0) ? handleKeyDown.whichOn-1 : numSpheres-1);
+
+    // spaceship motion
+    
+    var time=1;
     switch (event.code) {
         
         // model selection
@@ -118,16 +130,16 @@ function handleKeyDown(event) {
             handleKeyDown.whichOn = -1; // nothing highlighted
             break;
         case "ArrowRight": // select next triangle set
-            highlightModel(modelEnum.TRIANGLES,(handleKeyDown.whichOn+1) % numTriangleSets);
+                translateModel(vec3.scale(temp,viewRight,-viewDelta));
             break;
         case "ArrowLeft": // select previous triangle set
-            highlightModel(modelEnum.TRIANGLES,(handleKeyDown.whichOn > 0) ? handleKeyDown.whichOn-1 : numTriangleSets-1);
+                translateModel(vec3.scale(temp,viewRight,viewDelta));
             break;
         case "ArrowUp": // select next sphere
-            highlightModel(modelEnum.SPHERE,(handleKeyDown.whichOn+1) % numSpheres);
+                velocity = velocity + acceleration*time;
             break;
         case "ArrowDown": // select previous sphere
-            highlightModel(modelEnum.SPHERE,(handleKeyDown.whichOn > 0) ? handleKeyDown.whichOn-1 : numSpheres-1);
+                velocity = velocity - deacceleration*time;
             break;
             
         // view change
@@ -410,7 +422,7 @@ function loadModels() {
                     vec3.min(minCorner,minCorner,minXYZ); // update world bbox min corner
                     vec3.max(maxCorner,maxCorner,maxXYZ); // update world bbox max corner
                 } // end for each sphere
-                viewDelta = vec3.length(vec3.subtract(temp,maxCorner,minCorner)) / 100; // set global
+                viewDelta = vec3.length(vec3.subtract(temp,maxCorner,minCorner)) / 200; // set global
 
                 // make one sphere instance that will be reused
                 var oneSphere = makeSphere(32);
@@ -589,6 +601,8 @@ function renderModels() {
         vec3.negate(negCenter,currModel.center);
         mat4.multiply(sumRotation,sumRotation,mat4.fromTranslation(temp,negCenter)); // rotate * -translate
         mat4.multiply(sumRotation,mat4.fromTranslation(temp,currModel.center),sumRotation); // translate * rotate * -translate
+
+
         mat4.fromTranslation(mMatrix,currModel.translation); // translate in model matrix
         mat4.multiply(mMatrix,mMatrix,sumRotation); // rotate in model matrix
     } // end make model transform
@@ -658,6 +672,17 @@ function renderModels() {
         
         // define model transform, premult with pvmMatrix, feed to shader
         makeModelTransform(sphere);
+
+        var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
+        lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
+        viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
+        Eye = vec3.add(Eye,Eye,vec3.scale(temp,lookAt,velocity));
+        Center = vec3.add(Center,Center,vec3.scale(temp,lookAt,velocity));
+        vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,lookAt,velocity));   
+        // translateModel(vec3.scale(temp,lookAt,velocity),currModel);
+        // vec3.add(currModel.translation,currModel.translation,velocity);   
+        // sphere.z = sphere.z + velocity;
+
         mat4.fromTranslation(instanceTransform,vec3.fromValues(sphere.x,sphere.y,sphere.z)); // recenter sphere
         mat4.scale(mMatrix,mMatrix,vec3.fromValues(sphere.r,sphere.r,sphere.r)); // change size
         mat4.multiply(mMatrix,instanceTransform,mMatrix); // apply recenter sphere

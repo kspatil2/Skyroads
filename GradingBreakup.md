@@ -16,7 +16,7 @@ Part 1: Create the skyMap and spaceship
 Create and render the models needed for the game. To display a spaceship, skymap, meters inside the spaceship. The skymap will contain a road and empty space on the sides. As the road progresses, there will be obstacles which the spaceship has to cross. Meters on the side will display ship's speed/acceleration, Fuel levels and Oxygen levels. Image in the background for space-like look. Fancy modeling is not necessary; cubes and rectangles are enough. No motion is required yet.
 
 Part 2: Add motion to the skyRoad
-Create motion in the skymap. Arrow keys Up and down will move the spaceship ahead in the skyroad. Up key will accelerate the skymap towards the viewer while down key will deaccelerate the skymap. Overall effect will be of the spaceship moving accelerating and deaccelerating in the game.
+Create motion in the skymap. Arrow keys Up and down will move the spaceship ahead in the skyroad. Up key will accelerate the skymap towards the viewer while down key will deaccelerate the spaceship.
 
 Part 3: Add motion to the spaceship
 Allow the spaceship to move sideways and jump. A simple 3D box will do, though will attempt to make it more interesting. Make sure the spaceship can move in sideways using left and right arrow keys. It should also jump when spacebar is used. No need to animate the spaceship jump at this point, just going to show it first at ground level, then at jumping at a certain height. You need to support only one life for the moment.
