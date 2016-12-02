@@ -2,7 +2,7 @@
 //https://drive.google.com/open?id=   
 /* assignment specific globals */
 //https://ncsucgclass.github.io/prog3/triangles.json
-const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/34ibx"; // triangles file loc
+const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/3t4ud"; // triangles file loc
 const INPUT_SPHERES_URL = "https://api.myjson.com/bins/27jub"; // spheres file loc
 var defaultEye = vec3.fromValues(0.5,0.5,-0.5); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.5,0.5); // default view direction in world space
@@ -10,7 +10,8 @@ var defaultUp = vec3.fromValues(0,1,0); // default view up vector
 var lightAmbient = vec3.fromValues(1,1,1); // default light ambient emission
 var lightDiffuse = vec3.fromValues(1,1,1); // default light diffuse emission
 var lightSpecular = vec3.fromValues(1,1,1); // default light specular emission
-var lightPosition = vec3.fromValues(2,4,-0.5); // default light position
+var lightPosition = vec3.fromValues(0.5,4,0.4); // default light position
+var defaultlightPosition = vec3.fromValues(0.5,4,0.4); // default light position
 var rotateTheta = Math.PI/50; // how much to rotate models by with each key press
 
 /* webgl and geometry data */
@@ -44,10 +45,12 @@ var deacceleration = 0.001;
 var velocity=0;
 
 var spaceJump=0.0; // flag if in jumping
-var jumpTime=2; // total time of jump
+var jumpTime=1; // half total time of jump till the top
 var spaceJumpCounter=0; // time = t
+var freeFallTime=0;
 var jumpVelocity=0.1; // v = u0
 var gravity = 0.1;
+var freefall_velocity=0;
 // ASSIGNMENT HELPER FUNCTIONS
 
 // get the JSON file from the passed URL
@@ -687,6 +690,7 @@ function renderModels() {
         viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
         Eye = vec3.add(Eye,Eye,vec3.scale(temp,lookAt,velocity));
         Center = vec3.add(Center,Center,vec3.scale(temp,lookAt,velocity));
+        // lightPosition = vec3.add(lightPosition,defaultlightPosition,vec3.subtract(temp,Eye,defaultEye));
         // to be applied to spaceship patterns
         vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,lookAt,velocity));   
         if(spaceJump==1 && spaceJumpCounter<jumpTime)
@@ -694,8 +698,6 @@ function renderModels() {
             var v;
             v = jumpVelocity - gravity * spaceJumpCounter;
             spaceJumpCounter = spaceJumpCounter + jumpTime/10;
-            console.log(spaceJumpCounter);
-
             // translateModel(vec3.scale(temp,Up,viewDelta));
             vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,Up,v));   
         }
@@ -703,8 +705,50 @@ function renderModels() {
         {
             spaceJump=0;
             spaceJumpCounter=0;
+            freefall_velocity=0;
+            freefall_flag=1;
         }
-       
+        var sphere_center = vec3.create(), sphere_bottom = vec3.create(); sphere_front = vec3.create();       
+        sphere_center = vec3.add(sphere_center,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z));        
+        sphere_bottom = vec3.add(sphere_bottom,sphere.translation,vec3.fromValues(sphere.x,sphere.y-sphere.r,sphere.z));
+        sphere_front = vec3.add(sphere_front,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z+sphere.r));        
+        // console.log("sphere.translation",sphere.translation[1]);
+        // console.log("sphere_bottom",sphere.y-sphere.r);
+        // Check if the spaceship is DEAD OR ALIVE
+        var surface = get_surface_level(sphere_bottom, inputTriangles);
+        
+        // console.log("center", sphere_center[1]);       
+        // sphere_bottom[1] = sphere_bottom[1].toFixed(2);
+        console.log(sphere_bottom[1], " ", surface);      
+        // console.log("just before ", justbefore);        
+        // emulate freefall
+        if(sphere_bottom[1]-surface>0.01 && spaceJump==0 )
+        {
+            var v=0;
+            v = freefall_velocity - gravity * freeFallTime;
+            freeFallTime = freeFallTime + jumpTime/10;   
+            if(justafter>surface)
+            {
+                var a = vec3.create();
+                vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,Up,v));      
+                a=vec3.add(a,sphere.translation,vec3.fromValues(sphere.x,sphere.y-sphere.r,sphere.z));
+                justafter = a[1];
+            }
+            else
+            {
+                sphere.translation[1]=surface-sphere.r;
+            }
+        }
+        else 
+        {
+            // sphere.translation[1]=surface;
+            // freefall_flag=0;
+        }
+
+
+
+
+        // console.log(vec3.add(temp,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z)));
         mat4.fromTranslation(instanceTransform,vec3.fromValues(sphere.x,sphere.y,sphere.z)); // recenter sphere
         mat4.scale(mMatrix,mMatrix,vec3.fromValues(sphere.r,sphere.r,sphere.r)); // change size
         mat4.multiply(mMatrix,instanceTransform,mMatrix); // apply recenter sphere
@@ -727,6 +771,38 @@ function renderModels() {
     } // end for each sphere
 } // end render model
 
+var justafter;
+var freefall_flag=0;
+function get_surface_level(sphere_bottom, inputTriangles)
+{
+    var length = inputTriangles.length;
+    var surface= -1;
+
+    for(var i = 0; i < length; i++)
+    {
+        // console.log(sphere_bottom[2]," ", inputTriangles[i].limitbaseZ[0]);
+        if(sphere_bottom[2] > inputTriangles[i].limitbaseZ[0] && sphere_bottom[2] < inputTriangles[i].limitbaseZ[1])
+        {
+            // console.log("NUSM");
+            if(sphere_bottom[0] > inputTriangles[i].limitbaseX[0] && sphere_bottom[0] < inputTriangles[i].limitbaseX[1])
+            {
+                    console.log(inputTriangles[i].id);
+                if(surface < inputTriangles[i].surfaceHeight)
+                {
+                    surface = inputTriangles[i].surfaceHeight;
+                }
+            }   
+        }            
+    }
+    // console.log("surface : ",surface);
+    return surface;
+}
+
+function check_Dead_or_Alive(sphere_bottom, inputTriangles)
+{
+    
+
+}
 
 /* MAIN -- HERE is where execution begins after window load */
 
@@ -738,4 +814,5 @@ function main() {
   renderModels(); // draw the triangles using webGL
   
 } // end main
+
 
