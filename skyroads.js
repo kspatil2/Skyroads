@@ -43,11 +43,11 @@ var acceleration = 0.001;
 var deacceleration = 0.001;
 var velocity=0;
 
-var spaceJump=0; // flag if in jumping
+var spaceJump=0.0; // flag if in jumping
 var jumpTime=2; // total time of jump
 var spaceJumpCounter=0; // time = t
-var jumpVelocity=10; // v = u0
-var gravity = 10;
+var jumpVelocity=0.1; // v = u0
+var gravity = 0.1;
 // ASSIGNMENT HELPER FUNCTIONS
 
 // get the JSON file from the passed URL
@@ -128,9 +128,12 @@ function handleKeyDown(event) {
     switch (event.code) {
         
         // model selection
-        case "Space": 
-                spaceJump=1;
-                spaceJumpCounter=0;
+        case "Space":
+                if(spaceJump!=1) // ensure no jump called between another jump 
+                {   
+                    spaceJump=1;
+                    spaceJumpCounter=0.0;
+                }
                 // jumpTime=0;    
                 // yet to write double jump
             break;
@@ -686,15 +689,17 @@ function renderModels() {
         Center = vec3.add(Center,Center,vec3.scale(temp,lookAt,velocity));
         // to be applied to spaceship patterns
         vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,lookAt,velocity));   
-        if(spaceJump==1 && spaceJumpCounter!=2)
+        if(spaceJump==1 && spaceJumpCounter<jumpTime)
         {
             var v;
             v = jumpVelocity - gravity * spaceJumpCounter;
-            spaceJumpCounter = spaceJumpCounter + 0.1;
+            spaceJumpCounter = spaceJumpCounter + jumpTime/10;
+            console.log(spaceJumpCounter);
+
             // translateModel(vec3.scale(temp,Up,viewDelta));
             vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,Up,v));   
         }
-        else if(spaceJumpCounter==2)
+        else if(spaceJumpCounter>jumpTime)
         {
             spaceJump=0;
             spaceJumpCounter=0;
