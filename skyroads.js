@@ -685,6 +685,7 @@ function renderModels() {
         // define model transform, premult with pvmMatrix, feed to shader
         makeModelTransform(sphere);
 
+        var sphere_center = vec3.create(), sphere_bottom = vec3.create(); sphere_front = vec3.create();       
         var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
         lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
         viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
@@ -703,46 +704,54 @@ function renderModels() {
         }
         else if(spaceJumpCounter>jumpTime)
         {
+            sphere_bottom = vec3.add(sphere_bottom,sphere.translation,vec3.fromValues(sphere.x,sphere.y-sphere.r,sphere.z));
+            var surface = get_surface_level(sphere_bottom, inputTriangles);
+            time = Math.sqrt(2 *(sphere_bottom[1]-surface)/gravity);
+            freeFallTime=0;
+
             spaceJump=0;
             spaceJumpCounter=0;
             freefall_velocity=0;
-            freefall_flag=1;
+            // freefall_flag=1;
         }
-        var sphere_center = vec3.create(), sphere_bottom = vec3.create(); sphere_front = vec3.create();       
+            // console.log("sphere.translation",sphere.translation[1]);
+        // console.log("sphere_bottom",sphere.y-sphere.r);
+        // Check if the spaceship is DEAD OR ALIVE
+        
         sphere_center = vec3.add(sphere_center,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z));        
         sphere_bottom = vec3.add(sphere_bottom,sphere.translation,vec3.fromValues(sphere.x,sphere.y-sphere.r,sphere.z));
         sphere_front = vec3.add(sphere_front,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z+sphere.r));        
-        // console.log("sphere.translation",sphere.translation[1]);
-        // console.log("sphere_bottom",sphere.y-sphere.r);
-        // Check if the spaceship is DEAD OR ALIVE
+
         var surface = get_surface_level(sphere_bottom, inputTriangles);
-        
         // console.log("center", sphere_center[1]);       
         // sphere_bottom[1] = sphere_bottom[1].toFixed(2);
         console.log(sphere_bottom[1], " ", surface);      
-        // console.log("just before ", justbefore);        
+        console.log("time", time);        
+        console.log("freeFallTime", freeFallTime);
         // emulate freefall
-        if(sphere_bottom[1]-surface>0.01 && spaceJump==0 )
+        if(sphere_bottom[1]-surface>0.01 && spaceJump==0 && freeFallTime < time)
         {
+            console.log("hello");
             var v=0;
             v = freefall_velocity - gravity * freeFallTime;
-            freeFallTime = freeFallTime + jumpTime/10;   
-            if(justafter>surface)
+            freeFallTime = freeFallTime + time/20;   
+            // if(justafter>surface)
             {
                 var a = vec3.create();
                 vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,Up,v));      
                 a=vec3.add(a,sphere.translation,vec3.fromValues(sphere.x,sphere.y-sphere.r,sphere.z));
                 justafter = a[1];
+                freefall_flag=1;
             }
-            else
+            // else
             {
-                sphere.translation[1]=surface-sphere.r;
+                // sphere.translation[1]=surface-sphere.r;
             }
         }
-        else 
+        else if(freefall_flag==1)
         {
-            // sphere.translation[1]=surface;
-            // freefall_flag=0;
+            sphere.translation[1]=surface-sphere.r;
+            freefall_flag=0;
         }
 
 
@@ -773,6 +782,7 @@ function renderModels() {
 
 var justafter;
 var freefall_flag=0;
+var time;
 function get_surface_level(sphere_bottom, inputTriangles)
 {
     var length = inputTriangles.length;
@@ -786,7 +796,7 @@ function get_surface_level(sphere_bottom, inputTriangles)
             // console.log("NUSM");
             if(sphere_bottom[0] > inputTriangles[i].limitbaseX[0] && sphere_bottom[0] < inputTriangles[i].limitbaseX[1])
             {
-                    console.log(inputTriangles[i].id);
+                    // console.log(inputTriangles[i].id);
                 if(surface < inputTriangles[i].surfaceHeight)
                 {
                     surface = inputTriangles[i].surfaceHeight;
