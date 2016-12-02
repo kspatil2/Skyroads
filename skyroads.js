@@ -41,8 +41,13 @@ var Up = vec3.clone(defaultUp); // view up vector in world space
 
 var acceleration = 0.001;
 var deacceleration = 0.001;
-
 var velocity=0;
+
+var spaceJump=0; // flag if in jumping
+var jumpTime=2; // total time of jump
+var spaceJumpCounter=0; // time = t
+var jumpVelocity=10; // v = u0
+var gravity = 10;
 // ASSIGNMENT HELPER FUNCTIONS
 
 // get the JSON file from the passed URL
@@ -72,10 +77,6 @@ function getJSONFile(url,descr) {
     }
 } // end get input spheres
 
-function translateModel(offset, currModel) {
-    // if (handleKeyDown.modelOn != null)
-            vec3.add(handleKeyDown.modelOn.translation,handleKeyDown.modelOn.translation,offset);   
-} // end translate model
 // does stuff when keys are pressed
 function handleKeyDown(event) {
     
@@ -94,6 +95,10 @@ function handleKeyDown(event) {
         handleKeyDown.modelOn.on = true; 
     } // end highlight model
     
+    function translateModel(offset, currModel) {
+        // if (handleKeyDown.modelOn != null)
+                vec3.add(handleKeyDown.modelOn.translation,handleKeyDown.modelOn.translation,offset);   
+    } // end translate model
 
     function rotateModel(axis,direction) {
         if (handleKeyDown.modelOn != null) {
@@ -124,10 +129,10 @@ function handleKeyDown(event) {
         
         // model selection
         case "Space": 
-            if (handleKeyDown.modelOn != null)
-                handleKeyDown.modelOn.on = false; // turn off highlighted model
-            handleKeyDown.modelOn = null; // no highlighted model
-            handleKeyDown.whichOn = -1; // nothing highlighted
+                spaceJump=1;
+                spaceJumpCounter=0;
+                // jumpTime=0;    
+                // yet to write double jump
             break;
         case "ArrowRight": // select next triangle set
                 translateModel(vec3.scale(temp,viewRight,-viewDelta));
@@ -139,7 +144,8 @@ function handleKeyDown(event) {
                 velocity = velocity + acceleration*time;
             break;
         case "ArrowDown": // select previous sphere
-                velocity = velocity - deacceleration*time;
+                if(velocity!=0)
+                    velocity = velocity - deacceleration*time;
             break;
             
         // view change
@@ -678,11 +684,22 @@ function renderModels() {
         viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
         Eye = vec3.add(Eye,Eye,vec3.scale(temp,lookAt,velocity));
         Center = vec3.add(Center,Center,vec3.scale(temp,lookAt,velocity));
+        // to be applied to spaceship patterns
         vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,lookAt,velocity));   
-        // translateModel(vec3.scale(temp,lookAt,velocity),currModel);
-        // vec3.add(currModel.translation,currModel.translation,velocity);   
-        // sphere.z = sphere.z + velocity;
-
+        if(spaceJump==1 && spaceJumpCounter!=2)
+        {
+            var v;
+            v = jumpVelocity - gravity * spaceJumpCounter;
+            spaceJumpCounter = spaceJumpCounter + 0.1;
+            // translateModel(vec3.scale(temp,Up,viewDelta));
+            vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,Up,v));   
+        }
+        else if(spaceJumpCounter==2)
+        {
+            spaceJump=0;
+            spaceJumpCounter=0;
+        }
+       
         mat4.fromTranslation(instanceTransform,vec3.fromValues(sphere.x,sphere.y,sphere.z)); // recenter sphere
         mat4.scale(mMatrix,mMatrix,vec3.fromValues(sphere.r,sphere.r,sphere.r)); // change size
         mat4.multiply(mMatrix,instanceTransform,mMatrix); // apply recenter sphere
