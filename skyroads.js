@@ -2,7 +2,7 @@
 //https://drive.google.com/open?id=   
 /* assignment specific globals */
 //https://ncsucgclass.github.io/prog3/triangles.json
-const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/3t4ud"; // triangles file loc
+const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/2w2et"; // triangles file loc
 const INPUT_SPHERES_URL = "https://api.myjson.com/bins/27jub"; // spheres file loc
 var defaultEye = vec3.fromValues(0.5,0.5,-0.5); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.5,0.5); // default view direction in world space
@@ -51,6 +51,17 @@ var freeFallTime=0;
 var jumpVelocity=0.1; // v = u0
 var gravity = 0.1;
 var freefall_velocity=0;
+
+var sideJump=0.0; // flag if in jumping
+var sidejumpTime=1; // half total time of jump till the top
+var sideJumpCounter=0; // time = t
+var sidejumpVelocity=0.05; // v = u0
+var sidegravity = 0.05;
+var left=0,right=0;
+// var freeFallTime=0;
+// var freefall_velocity=0;
+
+
 // ASSIGNMENT HELPER FUNCTIONS
 
 // get the JSON file from the passed URL
@@ -138,13 +149,26 @@ function handleKeyDown(event) {
                     spaceJumpCounter=0.0;
                 }
                 // jumpTime=0;    
-                // yet to write double jump
+                // yet to write double jump ... well, what do u know ... already did it
             break;
         case "ArrowRight": // select next triangle set
-                translateModel(vec3.scale(temp,viewRight,-viewDelta));
+                if(sideJump!=1) // ensure no jump called between another jump 
+                {   
+                    left=0;
+                    right=1;
+                    sideJump=1;
+                    sideJumpCounter=0.0;
+                }
             break;
         case "ArrowLeft": // select previous triangle set
-                translateModel(vec3.scale(temp,viewRight,viewDelta));
+                if(sideJump!=1) // ensure no jump called between another jump 
+                {   
+                    left=1;
+                    right=0;
+                    sideJump=1;
+                    sideJumpCounter=0.0;
+                }
+                // translateModel(vec3.scale(temp,viewRight,viewDelta));
             break;
         case "ArrowUp": // select next sphere
                 velocity = velocity + acceleration*time;
@@ -685,7 +709,13 @@ function renderModels() {
         // define model transform, premult with pvmMatrix, feed to shader
         makeModelTransform(sphere);
 
-        var sphere_center = vec3.create(), sphere_bottom = vec3.create(); sphere_front = vec3.create();       
+        var sphere_center = vec3.create(), sphere_bottom = vec3.create(); sphere_front = vec3.create();sphere_left = vec3.create();sphere_right = vec3.create();       
+        sphere_center = vec3.add(sphere_center,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z));        
+        sphere_bottom = vec3.add(sphere_bottom,sphere.translation,vec3.fromValues(sphere.x,sphere.y-sphere.r,sphere.z));
+        sphere_front = vec3.add(sphere_front,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z+sphere.r));        
+        sphere_left = vec3.add(sphere_left,sphere.translation,vec3.fromValues(sphere.x-sphere.r,sphere.y,sphere.z));        
+        sphere_right = vec3.add(sphere_right,sphere.translation,vec3.fromValues(sphere.x+sphere.r,sphere.y,sphere.z));        
+
         var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
         lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
         viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
@@ -694,6 +724,7 @@ function renderModels() {
         // lightPosition = vec3.add(lightPosition,defaultlightPosition,vec3.subtract(temp,Eye,defaultEye));
         // to be applied to spaceship patterns
         vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,lookAt,velocity));   
+
         if(spaceJump==1 && spaceJumpCounter<jumpTime)
         {
             var v;
@@ -714,20 +745,8 @@ function renderModels() {
             freefall_velocity=0;
             // freefall_flag=1;
         }
-            // console.log("sphere.translation",sphere.translation[1]);
-        // console.log("sphere_bottom",sphere.y-sphere.r);
-        // Check if the spaceship is DEAD OR ALIVE
-        
-        sphere_center = vec3.add(sphere_center,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z));        
-        sphere_bottom = vec3.add(sphere_bottom,sphere.translation,vec3.fromValues(sphere.x,sphere.y-sphere.r,sphere.z));
-        sphere_front = vec3.add(sphere_front,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z+sphere.r));        
 
         var surface = get_surface_level(sphere_bottom, inputTriangles);
-        // console.log("center", sphere_center[1]);       
-        // sphere_bottom[1] = sphere_bottom[1].toFixed(2);
-        console.log(sphere_bottom[1], " ", surface);      
-        console.log("time", time);        
-        console.log("freeFallTime", freeFallTime);
         // emulate freefall
         if(sphere_bottom[1]-surface>0.01 && spaceJump==0 && freeFallTime < time)
         {
@@ -743,10 +762,6 @@ function renderModels() {
                 justafter = a[1];
                 freefall_flag=1;
             }
-            // else
-            {
-                // sphere.translation[1]=surface-sphere.r;
-            }
         }
         else if(freefall_flag==1)
         {
@@ -754,7 +769,59 @@ function renderModels() {
             freefall_flag=0;
         }
 
+        // side shift 
+        var side_surface;
+        if(left==1 && right ==0)
+        {
+            side_surface = get_side_surface_level(sphere_left, inputTriangles, right); // right = 1 for left
+        }
+        else if(right ==1 && left ==0)
+            side_surface = get_side_surface_level(sphere_right, inputTriangles, right); // right = 0 for right
+        console.log(side_surface);
+        if(sideJump==1 && sideJumpCounter<sidejumpTime)
+        {
+            var v;
+            v = sidejumpVelocity - sidegravity * sideJumpCounter;
+            sideJumpCounter = sideJumpCounter + sidejumpTime/10;
+            // translateModel(vec3.scale(temp,Up,viewDelta));
 
+            var sidetemp = vec3.create(), temp2 = vec3.create();
+            if(left == 1 && right==0)
+            {
+                console.log("going left");
+                vec3.add(sidetemp,sphere.translation,vec3.scale(temp,viewRight,v));
+                temp2 = vec3.add(sphere_left,sidetemp,vec3.fromValues(sphere.x-sphere.r,sphere.y,sphere.z));        
+                console.log(sidetemp[0]);
+                if(side_surface < temp2[0])   
+                    vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,viewRight,v));   
+                else
+                    left=0;
+            }
+            else if(right==1 && left ==0)
+            {
+                console.log("going right");
+                vec3.add(sidetemp,sphere.translation,vec3.scale(temp,viewRight,-v));   
+                console.log(sidetemp[0]);
+                temp2 = vec3.add(sphere_right,sidetemp,vec3.fromValues(sphere.x+sphere.r,sphere.y,sphere.z));        
+                if(side_surface > temp2[0])
+                    vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,viewRight,-v));   
+                else
+                    right=0;
+            }
+        }
+        else if(sideJumpCounter>sidejumpTime)
+        {
+            // sphere_bottom = vec3.add(sphere_bottom,sphere.translation,vec3.fromValues(sphere.x,sphere.y-sphere.r,sphere.z));
+            // var surface = get_surface_level(sphere_bottom, inputTriangles);
+            // time = Math.sqrt(2 *(sphere_bottom[1]-surface)/gravity);
+            // freeFallTime=0;
+            left=0;
+            right=0;
+            sideJump=0;
+            sideJumpCounter=0;
+            // freefall_velocity=0;
+            // freefall_flag=1;
+        }
 
 
         // console.log(vec3.add(temp,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z)));
@@ -783,6 +850,7 @@ function renderModels() {
 var justafter;
 var freefall_flag=0;
 var time;
+
 function get_surface_level(sphere_bottom, inputTriangles)
 {
     var length = inputTriangles.length;
@@ -806,6 +874,42 @@ function get_surface_level(sphere_bottom, inputTriangles)
     }
     // console.log("surface : ",surface);
     return surface;
+}
+
+function get_side_surface_level(sphere_side, inputTriangles, side)
+{
+    var length = inputTriangles.length;
+    var surface;
+    if(side==0)
+        surface= -10;
+    else if(side ==1)
+        surface = 10;
+
+    for(var i = 0; i < length; i++)
+    {
+        // console.log(sphere_bottom[2]," ", inputTriangles[i].limitbaseZ[0]);
+        if(sphere_side[2] > inputTriangles[i].limitbaseZ[0] && sphere_side[2] < inputTriangles[i].limitbaseZ[1])
+        {
+            if(sphere_side[1] > inputTriangles[i].limitbaseY[0] && sphere_side[1] < inputTriangles[i].limitbaseY[1])
+            {
+                // console.log("sphere_side: ", sphere_side);
+                // choosing the closest right edge for left
+                if(side == 0 && surface < inputTriangles[i].surfaceLeftRightFront[1] && sphere_side[0] > inputTriangles[i].surfaceLeftRightFront[1])
+                {
+                    surface = inputTriangles[i].surfaceLeftRightFront[1];
+                    console.log(inputTriangles[i].id);
+                }
+                else if(side == 1 && surface > inputTriangles[i].surfaceLeftRightFront[0] && sphere_side[0] < inputTriangles[i].surfaceLeftRightFront[0])
+                {
+                    surface = inputTriangles[i].surfaceLeftRightFront[0];
+                }
+            }
+
+
+        }            
+    }
+    console.log("surface : ",surface);
+    return surface;   
 }
 
 function check_Dead_or_Alive(sphere_bottom, inputTriangles)
