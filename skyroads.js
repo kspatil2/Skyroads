@@ -823,6 +823,11 @@ function renderModels() {
             // freefall_flag=1;
         }
 
+        // Check Dead or Alive
+        if(sphere_center[1] < -1 || check_Dead_or_Alive(sphere_front,sphere_center,inputTriangles))
+            window.alert("Game Over");
+
+        
 
         // console.log(vec3.add(temp,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z)));
         mat4.fromTranslation(instanceTransform,vec3.fromValues(sphere.x,sphere.y,sphere.z)); // recenter sphere
@@ -912,9 +917,28 @@ function get_side_surface_level(sphere_side, inputTriangles, side)
     return surface;   
 }
 
-function check_Dead_or_Alive(sphere_bottom, inputTriangles)
+function check_Dead_or_Alive(sphere_front,sphere_center, inputTriangles)
 {
-    
+    var length = inputTriangles.length;
+    console.log(sphere_front[1]);
+    for(var i = 0; i < length; i++)
+    {
+        // console.log(sphere_bottom[2]," ", inputTriangles[i].limitbaseZ[0]);
+        if(sphere_front[1] > inputTriangles[i].limitbaseY[0] && sphere_front[1] < inputTriangles[i].limitbaseY[1])
+        {
+            // console.log("NUSM");
+            if(sphere_front[0] > inputTriangles[i].limitbaseX[0] && sphere_front[0] < inputTriangles[i].limitbaseX[1])
+            {
+                console.log("id :",inputTriangles[i].id);
+                if(sphere_front[2] > inputTriangles[i].surfaceLeftRightFront[2] && sphere_center[2] < inputTriangles[i].surfaceLeftRightFront[2])
+                {
+                    return 1;
+                }
+            }   
+        }            
+    }
+    // console.log("surface : ",surface);
+    return 0;       
 
 }
 
