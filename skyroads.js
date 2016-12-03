@@ -2,15 +2,15 @@
 //https://drive.google.com/open?id=   
 /* assignment specific globals */
 //https://ncsucgclass.github.io/prog3/triangles.json
-const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/2w2et"; // triangles file loc
+const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/529xf"; // triangles file loc
 const INPUT_SPHERES_URL = "https://api.myjson.com/bins/27jub"; // spheres file loc
-var defaultEye = vec3.fromValues(0.5,0.5,-0.5); // default eye position in world space
-var defaultCenter = vec3.fromValues(0.5,0.5,0.5); // default view direction in world space
+var defaultEye = vec3.fromValues(0.5,0.8,-1); // default eye position in world space
+var defaultCenter = vec3.fromValues(0.5,0.8,0.5); // default view direction in world space
 var defaultUp = vec3.fromValues(0,1,0); // default view up vector
 var lightAmbient = vec3.fromValues(1,1,1); // default light ambient emission
 var lightDiffuse = vec3.fromValues(1,1,1); // default light diffuse emission
 var lightSpecular = vec3.fromValues(1,1,1); // default light specular emission
-var lightPosition = vec3.fromValues(0.5,4,0.4); // default light position
+var lightPosition = vec3.fromValues(0.5,4,-0.4); // default light position
 var defaultlightPosition = vec3.fromValues(0.5,4,0.4); // default light position
 var rotateTheta = Math.PI/50; // how much to rotate models by with each key press
 
@@ -824,7 +824,7 @@ function renderModels() {
         }
 
         // Check Dead or Alive
-        if(sphere_center[1] < -1 || check_Dead_or_Alive(sphere_front,sphere_center,inputTriangles))
+        if(sphere_center[1] < -0.5 || check_Dead_or_Alive(sphere_front,sphere_center,inputTriangles))
             window.alert("Game Over");
 
         
