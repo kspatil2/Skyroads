@@ -2,8 +2,8 @@
 //https://drive.google.com/open?id=   
 /* assignment specific globals */
 //https://ncsucgclass.github.io/prog3/triangles.json
-const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/529xf"; // triangles file loc
-const INPUT_SPHERES_URL = "https://api.myjson.com/bins/27jub"; // spheres file loc
+const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/24acb"; // triangles file loc
+const INPUT_SPHERES_URL = "https://api.myjson.com/bins/1hwv3"; // spheres file loc
 var defaultEye = vec3.fromValues(0.5,0.8,-1); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.8,0.5); // default view direction in world space
 var defaultUp = vec3.fromValues(0,1,0); // default view up vector
@@ -657,7 +657,7 @@ function renderModels() {
     
     // set up handedness, projection and view
     mat4.fromScaling(hMatrix,vec3.fromValues(-1,1,1)); // create handedness matrix
-    mat4.perspective(pMatrix,0.5*Math.PI,1,0.1,10); // create projection matrix
+    mat4.perspective(pMatrix,0.5*Math.PI,1,0.1,20); // create projection matrix
     mat4.lookAt(vMatrix,Eye,Center,Up); // create view matrix
     mat4.multiply(hpvMatrix,hMatrix,pMatrix); // handedness * projection
     mat4.multiply(hpvMatrix,hpvMatrix,vMatrix); // handedness * projection * view
@@ -711,7 +711,7 @@ function renderModels() {
 
         var sphere_center = vec3.create(), sphere_bottom = vec3.create(); sphere_front = vec3.create();sphere_left = vec3.create();sphere_right = vec3.create();       
         sphere_center = vec3.add(sphere_center,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z));        
-        sphere_bottom = vec3.add(sphere_bottom,sphere.translation,vec3.fromValues(sphere.x,sphere.y-sphere.r,sphere.z));
+        sphere_bottom = vec3.add(sphere_bottom,sphere.translation,vec3.fromValues(sphere.x, -sphere.r,sphere.z));
         sphere_front = vec3.add(sphere_front,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z+sphere.r));        
         sphere_left = vec3.add(sphere_left,sphere.translation,vec3.fromValues(sphere.x-sphere.r,sphere.y,sphere.z));        
         sphere_right = vec3.add(sphere_right,sphere.translation,vec3.fromValues(sphere.x+sphere.r,sphere.y,sphere.z));        
@@ -747,10 +747,21 @@ function renderModels() {
         }
 
         var surface = get_surface_level(sphere_bottom, inputTriangles);
+        if(time=-1)
+        {
+            time = Math.sqrt(2 *(sphere_bottom[1]-(-1))/gravity);
+            // freeFallTime=
+        }
+        // console.log("surface : ",surface);
+        // console.log("freeFallTime : ",surface);
+
+        // console.log("bottom y coordinate :", sphere_bottom[1]);
+        // console.log("surface:",surface);
+        // console.log
         // emulate freefall
         if(sphere_bottom[1]-surface>0.01 && spaceJump==0 && freeFallTime < time)
         {
-            console.log("hello");
+            // console.log("hello");
             var v=0;
             v = freefall_velocity - gravity * freeFallTime;
             freeFallTime = freeFallTime + time/20;   
@@ -765,19 +776,23 @@ function renderModels() {
         }
         else if(freefall_flag==1)
         {
-            sphere.translation[1]=surface-sphere.r;
+            console.log("b:", sphere_bottom[1]);
+            console.log("s:",surface);
+            sphere.translation[1]=surface+sphere.r-sphere.y;
+            console.log("t:",sphere.translation[1]);
             freefall_flag=0;
+            freeFallTime=0;
         }
 
         // side shift 
         var side_surface;
-        if(left==1 && right ==0)
+        if(left==1 && right==0)
         {
             side_surface = get_side_surface_level(sphere_left, inputTriangles, right); // right = 1 for left
         }
-        else if(right ==1 && left ==0)
+        else if(right==1 && left ==0)
             side_surface = get_side_surface_level(sphere_right, inputTriangles, right); // right = 0 for right
-        console.log(side_surface);
+        // console.log(side_surface);
         if(sideJump==1 && sideJumpCounter<sidejumpTime)
         {
             var v;
@@ -788,10 +803,10 @@ function renderModels() {
             var sidetemp = vec3.create(), temp2 = vec3.create();
             if(left == 1 && right==0)
             {
-                console.log("going left");
+                // console.log("going left");
                 vec3.add(sidetemp,sphere.translation,vec3.scale(temp,viewRight,v));
                 temp2 = vec3.add(sphere_left,sidetemp,vec3.fromValues(sphere.x-sphere.r,sphere.y,sphere.z));        
-                console.log(sidetemp[0]);
+                // console.log(sidetemp[0]);
                 if(side_surface < temp2[0])   
                     vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,viewRight,v));   
                 else
@@ -801,7 +816,7 @@ function renderModels() {
             {
                 console.log("going right");
                 vec3.add(sidetemp,sphere.translation,vec3.scale(temp,viewRight,-v));   
-                console.log(sidetemp[0]);
+                // console.log(sidetemp[0]);
                 temp2 = vec3.add(sphere_right,sidetemp,vec3.fromValues(sphere.x+sphere.r,sphere.y,sphere.z));        
                 if(side_surface > temp2[0])
                     vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,viewRight,-v));   
@@ -824,6 +839,7 @@ function renderModels() {
         }
 
         // Check Dead or Alive
+        // console.log(s)
         if(sphere_center[1] < -0.5 || check_Dead_or_Alive(sphere_front,sphere_center,inputTriangles))
             window.alert("Game Over");
 
@@ -854,7 +870,7 @@ function renderModels() {
 
 var justafter;
 var freefall_flag=0;
-var time;
+var time=-1;
 
 function get_surface_level(sphere_bottom, inputTriangles)
 {
@@ -902,7 +918,7 @@ function get_side_surface_level(sphere_side, inputTriangles, side)
                 if(side == 0 && surface < inputTriangles[i].surfaceLeftRightFront[1] && sphere_side[0] > inputTriangles[i].surfaceLeftRightFront[1])
                 {
                     surface = inputTriangles[i].surfaceLeftRightFront[1];
-                    console.log(inputTriangles[i].id);
+                    // console.log(inputTriangles[i].id);
                 }
                 else if(side == 1 && surface > inputTriangles[i].surfaceLeftRightFront[0] && sphere_side[0] < inputTriangles[i].surfaceLeftRightFront[0])
                 {
@@ -913,14 +929,15 @@ function get_side_surface_level(sphere_side, inputTriangles, side)
 
         }            
     }
-    console.log("surface : ",surface);
+    // console.log("surface : ",surface);
     return surface;   
 }
 
+var ship_Z_before;
 function check_Dead_or_Alive(sphere_front,sphere_center, inputTriangles)
 {
     var length = inputTriangles.length;
-    console.log(sphere_front[1]);
+    // console.log("sphere_front",sphere_front);
     for(var i = 0; i < length; i++)
     {
         // console.log(sphere_bottom[2]," ", inputTriangles[i].limitbaseZ[0]);
@@ -929,15 +946,23 @@ function check_Dead_or_Alive(sphere_front,sphere_center, inputTriangles)
             // console.log("NUSM");
             if(sphere_front[0] > inputTriangles[i].limitbaseX[0] && sphere_front[0] < inputTriangles[i].limitbaseX[1])
             {
-                console.log("id :",inputTriangles[i].id);
+                // console.log("id :",inputTriangles[i].id);
+                // console.log("center",sphere_center[2]);
+                // console.log("Z obj", inputTriangles[i].surfaceLeftRightFront[2]);
                 if(sphere_front[2] > inputTriangles[i].surfaceLeftRightFront[2] && sphere_center[2] < inputTriangles[i].surfaceLeftRightFront[2])
                 {
                     return 1;
                 }
-            }   
+            }
+            // spaceship too fast
+            else if(ship_Z_before < inputTriangles[i].surfaceLeftRightFront[2] && sphere_center[2] > inputTriangles[i].surfaceLeftRightFront[2])
+            {
+                return 1;
+            }
         }            
     }
     // console.log("surface : ",surface);
+    ship_Z_before=sphere_center[2];
     return 0;       
 
 }
