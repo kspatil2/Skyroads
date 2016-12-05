@@ -755,7 +755,7 @@ function renderModels() {
         else if(spaceJumpCounter>jumpTime)
         {
             sphere_bottom = vec3.add(sphere_bottom,sphere.translation,vec3.fromValues(sphere.x,sphere.y-sphere.r,sphere.z));
-            var surface = get_surface_level(sphere_bottom, inputTriangles);
+            var surface = get_surface_level(sphere_bottom, inputTriangles,sphere);
             time = Math.sqrt(2 *(sphere_bottom[1]-surface)/gravity);
             freeFallTime=0;
 
@@ -765,13 +765,13 @@ function renderModels() {
             // freefall_flag=1;
         }
 
-        var surface = get_surface_level(sphere_bottom, inputTriangles, sphere);
+        var surface = get_surface_level(sphere_bottom, inputTriangles,sphere);
         if(time=-1)
         {
             time = Math.sqrt(2 *(sphere_bottom[1]-(-1))/gravity);
             // freeFallTime=
         }
-        // console.log("surface : ",surface);
+        console.log("surface : ",surface);
         // console.log("freeFallTime : ",surface);
 
         // console.log("bottom y coordinate :", sphere_bottom[1]);
@@ -883,7 +883,7 @@ function renderModels() {
         ctx.fillText("Score :"+score, 5, 20);
         ctx.fillText("HighScore :"+HighScore,330,20);
         ctx.fillText("Velocity :"+vel_now,5,40);
-        ctx.fillText("Old Monk",2,60);
+        ctx.fillText("Blender's Pride",2,60);
 
         // console.log(vec3.add(temp,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z)));
         mat4.fromTranslation(instanceTransform,vec3.fromValues(sphere.x,sphere.y,sphere.z)); // recenter sphere
@@ -912,7 +912,7 @@ var justafter;
 var freefall_flag=0;
 var time=-1;
 
-function get_surface_level(sphere_bottom, inputTriangles, sphere)
+function get_surface_level(sphere_bottom, inputTriangles,sphere)
 {
     var length = inputTriangles.length;
     var surface= -1;
@@ -923,7 +923,7 @@ function get_surface_level(sphere_bottom, inputTriangles, sphere)
         if(sphere_bottom[2] > inputTriangles[i].limitbaseZ[0] && sphere_bottom[2] < inputTriangles[i].limitbaseZ[1])
         {
             // console.log("NUSM");
-            if((sphere_bottom[0]+sphere.r) > inputTriangles[i].limitbaseX[0] && (sphere_bottom[0]-sphere.r) < inputTriangles[i].limitbaseX[1])
+            if((sphere_bottom[0]+sphere.r/2) > inputTriangles[i].limitbaseX[0] && (sphere_bottom[0]-sphere.r/2) < inputTriangles[i].limitbaseX[1])
             {
                     // console.log(inputTriangles[i].id);
                 if(surface < inputTriangles[i].surfaceHeight)
