@@ -870,12 +870,13 @@ function renderModels() {
             restart_level(sphere);
         }
 
+        var vel_now = Math.ceil(velocity);
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.font = '15pt Calibri';
         ctx.fillStyle = 'white';
         ctx.fillText("Score :"+score, 5, 20);
         ctx.fillText("HighScore :"+HighScore,330,20);
-        ctx.fillText("Velocity :"+acceleration*100,5,40);
+        ctx.fillText("Velocity :"+vel_now,5,40);
 
         // console.log(vec3.add(temp,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z)));
         mat4.fromTranslation(instanceTransform,vec3.fromValues(sphere.x,sphere.y,sphere.z)); // recenter sphere
