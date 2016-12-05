@@ -2,8 +2,8 @@
 //https://drive.google.com/open?id=   
 /* assignment specific globals */
 //https://ncsucgclass.github.io/prog3/triangles.json
-// const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/24acb"; // triangles file loc
-const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/4pavj";
+// const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/4pavj"; // Map#2
+const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/24acb"; // Map#3
 const INPUT_SPHERES_URL = "https://api.myjson.com/bins/1hwv3"; // spheres file loc
 var defaultEye = vec3.fromValues(0.5,0.8,-1); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.8,0.5); // default view direction in world space
@@ -41,8 +41,8 @@ var Eye = vec3.clone(defaultEye); // eye position in world space
 var Center = vec3.clone(defaultCenter); // view direction in world space
 var Up = vec3.clone(defaultUp); // view up vector in world space
 
-var acceleration = 0.001;
-var deacceleration = 0.001;
+var acceleration = 0.002;
+var deacceleration = 0.002;
 var velocity=0;
 
 var spaceJump=0.0; // flag if in jumping
@@ -56,8 +56,8 @@ var freefall_velocity=0;
 var sideJump=0.0; // flag if in jumping
 var sidejumpTime=1; // half total time of jump till the top
 var sideJumpCounter=0; // time = t
-var sidejumpVelocity=0.05; // v = u0
-var sidegravity = 0.05;
+var sidejumpVelocity=0.025; // v = u0
+var sidegravity = 0.025;
 var left=0,right=0;
 // var freeFallTime=0;
 // var freefall_velocity=0;
