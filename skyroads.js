@@ -41,8 +41,8 @@ var Eye = vec3.clone(defaultEye); // eye position in world space
 var Center = vec3.clone(defaultCenter); // view direction in world space
 var Up = vec3.clone(defaultUp); // view up vector in world space
 
-var acceleration = 0.002;
-var deacceleration = 0.002;
+var acceleration = 0.0025;
+var deacceleration = 0.0035;
 var velocity=0;
 
 var spaceJump=0.0; // flag if in jumping
@@ -176,7 +176,7 @@ function handleKeyDown(event) {
                 velocity = velocity + acceleration*time;
             break;
         case "ArrowDown": // select previous sphere
-                if(velocity!=0)
+                if(velocity<=0)
                     velocity = velocity - deacceleration*time;
             break;
             
@@ -875,6 +875,7 @@ function renderModels() {
         ctx.fillStyle = 'white';
         ctx.fillText("Score :"+score, 5, 20);
         ctx.fillText("HighScore :"+HighScore,330,20);
+        ctx.fillText("Velocity :"+acceleration*100,5,40);
 
         // console.log(vec3.add(temp,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z)));
         mat4.fromTranslation(instanceTransform,vec3.fromValues(sphere.x,sphere.y,sphere.z)); // recenter sphere
