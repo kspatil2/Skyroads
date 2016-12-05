@@ -883,7 +883,7 @@ function renderModels() {
         ctx.fillText("Score :"+score, 5, 20);
         ctx.fillText("HighScore :"+HighScore,330,20);
         ctx.fillText("Velocity :"+vel_now,5,40);
-        ctx.fillText("Blender's Pride",2,60);
+        ctx.fillText("Romanov",2,60);
 
         // console.log(vec3.add(temp,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z)));
         mat4.fromTranslation(instanceTransform,vec3.fromValues(sphere.x,sphere.y,sphere.z)); // recenter sphere
@@ -923,7 +923,7 @@ function get_surface_level(sphere_bottom, inputTriangles,sphere)
         if(sphere_bottom[2] > inputTriangles[i].limitbaseZ[0] && sphere_bottom[2] < inputTriangles[i].limitbaseZ[1])
         {
             // console.log("NUSM");
-            if((sphere_bottom[0]+sphere.r/2) > inputTriangles[i].limitbaseX[0] && (sphere_bottom[0]-sphere.r/2) < inputTriangles[i].limitbaseX[1])
+            if((sphere_bottom[0]+sphere.r/3) > inputTriangles[i].limitbaseX[0] && (sphere_bottom[0]-sphere.r/3) < inputTriangles[i].limitbaseX[1])
             {
                     // console.log(inputTriangles[i].id);
                 if(surface < inputTriangles[i].surfaceHeight)
