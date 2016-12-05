@@ -43,7 +43,7 @@ var Center = vec3.clone(defaultCenter); // view direction in world space
 var Up = vec3.clone(defaultUp); // view up vector in world space
 
 var acceleration = 0.003;
-var deacceleration = 0.060;
+var deacceleration = 0.006;
 var velocity=0;
 
 var spaceJump=0.0; // flag if in jumping
@@ -178,9 +178,12 @@ function handleKeyDown(event) {
             break;
         case "ArrowDown": // select previous sphere
                 if(velocity>0)
+                {
                     velocity = velocity - deacceleration*time;
-                else
-                    velocity = 0;
+                    if(velocity<0)
+                        velocity=0;
+                }
+                
             break;
             
         // view change
