@@ -870,7 +870,7 @@ function renderModels() {
             restart_level(sphere);
         }
 
-        var vel_now = Math.ceil(velocity);
+        var vel_now = velocity.toFixed(2);
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.font = '15pt Calibri';
         ctx.fillStyle = 'white';
