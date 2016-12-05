@@ -865,7 +865,7 @@ function renderModels() {
                 window.alert("New High Score:"+score);
             }
             else 
-                window.alert("Lol... couldn't even cross this level. GAME OVER.");
+                window.alert("GAME OVER. TRY AGAIN");
 
             restart_level(sphere);
         }
