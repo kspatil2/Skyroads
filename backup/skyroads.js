@@ -61,8 +61,7 @@ var sidegravity = 0.05;
 var left=0,right=0;
 // var freeFallTime=0;
 // var freefall_velocity=0;
-var Score=0;
-var HighScore = 0;
+
 
 // ASSIGNMENT HELPER FUNCTIONS
 
@@ -283,22 +282,11 @@ function handleKeyDown(event) {
     } // end switch
 } // end handleKeyDown
 
-var ctx;
-var timeNode;
 // set up the webGL environment
 function setupWebGL() {
     
     // Set up keys
     document.onkeydown = handleKeyDown; // call this when key pressed
-
-    // look up the text canvas.
-    var textCanvas = document.getElementById("text");
-    timeNode = document.createTextNode("");
-    textCanvas.appendChild(timeNode);
-    // make a 2D context for it
-    ctx = textCanvas.getContext("2d");
-
-
 
     // Get the image canvas, render an image in it
     var imageCanvas = document.getElementById("myImageCanvas"); // create a 2d canvas
@@ -856,25 +844,10 @@ function renderModels() {
 
         // Check Dead or Alive
         // console.log(s)
-        score=Math.floor(Eye[2]+1);
         if(sphere_center[1] < -0.5 || check_Dead_or_Alive(sphere_front,sphere_center,inputTriangles))
-        {
-            if(score > HighScore)
-            {
-                HighScore = score;
-                window.alert("New High Score:"+score);
-            }
-            else 
-                window.alert("Lol... couldn't even cross this level. GAME OVER.");
+            window.alert("Game Over");
 
-            restart_level(sphere);
-        }
-
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.font = '15pt Calibri';
-        ctx.fillStyle = 'white';
-        ctx.fillText("Score :"+score, 5, 20);
-        ctx.fillText("HighScore :"+HighScore,330,20);
+        
 
         // console.log(vec3.add(temp,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z)));
         mat4.fromTranslation(instanceTransform,vec3.fromValues(sphere.x,sphere.y,sphere.z)); // recenter sphere
@@ -982,13 +955,13 @@ function check_Dead_or_Alive(sphere_front,sphere_center, inputTriangles)
                 // console.log("Z obj", inputTriangles[i].surfaceLeftRightFront[2]);
                 if(sphere_front[2] > inputTriangles[i].surfaceLeftRightFront[2] && sphere_center[2] < inputTriangles[i].surfaceLeftRightFront[2])
                 {
-                    return inputTriangles[i].surfaceLeftRightFront[2];
+                    return 1;
                 }
             }
             // spaceship too fast
             else if(ship_Z_before < inputTriangles[i].surfaceLeftRightFront[2] && sphere_center[2] > inputTriangles[i].surfaceLeftRightFront[2])
             {
-                return inputTriangles[i].surfaceLeftRightFront[2];
+                return 1;
             }
         }            
     }
@@ -996,16 +969,6 @@ function check_Dead_or_Alive(sphere_front,sphere_center, inputTriangles)
     ship_Z_before=sphere_center[2];
     return 0;       
 
-}
-
-function restart_level(sphere)
-{
-    Eye = vec3.clone(defaultEye); // eye position in world space
-    Center = vec3.clone(defaultCenter); // view direction in world space
-    Up = vec3.clone(defaultUp); // view up vector in world space
-    Score=0;
-    sphere.translation = vec3.fromValues(0,0,0);
-    velocity=0;
 }
 
 /* MAIN -- HERE is where execution begins after window load */
@@ -1016,8 +979,7 @@ function main() {
   loadModels(); // load in the models from tri file
   setupShaders(); // setup the webGL shaders
   renderModels(); // draw the triangles using webGL
-   // Clear the 2D canvas
-    
+  
 } // end main
 
 
