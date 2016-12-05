@@ -43,7 +43,7 @@ var Center = vec3.clone(defaultCenter); // view direction in world space
 var Up = vec3.clone(defaultUp); // view up vector in world space
 
 var acceleration = 0.003;
-var deacceleration = 0.0060;
+var deacceleration = 0.060;
 var velocity=0;
 
 var spaceJump=0.0; // flag if in jumping
