@@ -177,7 +177,7 @@ function handleKeyDown(event) {
                 velocity = velocity + acceleration*time;
             break;
         case "ArrowDown": // select previous sphere
-                if(velocity<=0)
+                if(velocity>0)
                     velocity = velocity - deacceleration*time;
             break;
             
