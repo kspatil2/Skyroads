@@ -882,7 +882,7 @@ function renderModels() {
         ctx.fillStyle = 'white';
         ctx.fillText("Score :"+score, 5, 20);
         ctx.fillText("HighScore :"+HighScore,330,20);
-        ctx.fillText("Velocity :"+vel_now,5,40);
+        ctx.fillText("Velocity :"+vel_now*100,5,40);
         ctx.fillText("Romanov",2,60);
 
         // console.log(vec3.add(temp,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z)));
