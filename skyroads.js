@@ -742,7 +742,9 @@ function renderModels() {
         Center = vec3.add(Center,Center,vec3.scale(temp,lookAt,velocity));
         // lightPosition = vec3.add(lightPosition,defaultlightPosition,vec3.subtract(temp,Eye,defaultEye));
         // to be applied to spaceship patterns
-        vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,lookAt,velocity));   
+        // console.log("HELOOOOOOO");
+        // if(future_collision!=1)
+            vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,lookAt,velocity));   
 
         if(spaceJump==1 && spaceJumpCounter<jumpTime)
         {
@@ -860,20 +862,51 @@ function renderModels() {
             // freefall_flag=1;
         }
 
-        // Check Dead or Alive
+
+
+        // predict future front collision 
+        var front_collision = check_Dead_or_Alive(sphere_front,sphere_center,inputTriangles);
+        if(check_collision(sphere_front,sphere_center,inputTriangles)!=0)
+        {
+            console.log("Its collided now");
+            future_collision=1; // well, actually its in the present           
+        }
+        
+        if(front_collision!=0)
+        {   
+            var nextZ = vec3.create();
+            var temp = vec3.create();
+            var v = velocity ; // worked for acc = 0.003 and able to predict 3.6 ahead.
+            vec3.add(nextZ,sphere.translation,vec3.scale(temp,lookAt,v));
+            vec3.add(temp,nextZ,vec3.fromValues(sphere.x,sphere.y,sphere.z+sphere.r));        
+
+            // console.log("Future collision");
+            console.log("sphere_front_now: ",sphere.z+sphere.translation[2]+sphere.r);
+            console.log("front Collision: ",front_collision);
+            console.log("sphere_front_later: ",temp[2]);
+
+            if(temp[2] > front_collision && front_collision > sphere_front[2])
+            {
+                console.log("Future collision");
+                future_collision=1;   
+                sphere.translation[2] = front_collision - sphere.z - sphere.r;
+            }
+            // console.log(future_collision);
+        }
         // console.log(s)
+
         score=Math.floor(Eye[2]+1);
-        if(sphere_center[1] < -0.5 || check_Dead_or_Alive(sphere_front,sphere_center,inputTriangles))
+        if(sphere_center[1] < 0 /*|| check_Dead_or_Alive(sphere_front,sphere_center,inputTriangles)*/||future_collision)
         {
             if(score > HighScore)
             {
                 HighScore = score;
-                window.alert("New High Score:"+score);
+                // window.alert("New High Score:"+score);
             }
-            else 
-                window.alert("GAME OVER. TRY AGAIN");
-
-            restart_level(sphere);
+            // else 
+                // window.alert("GAME OVER. TRY AGAIN");
+                restart=1;
+            // restart_level(sphere);
         }
 
         var vel_now = velocity.toFixed(2);
@@ -905,12 +938,21 @@ function renderModels() {
 
         // draw a transformed instance of the sphere
         gl.drawElements(gl.TRIANGLES,triSetSizes[triSetSizes.length-1],gl.UNSIGNED_SHORT,0); // render
+        if(restart ==1)
+        {
+            restart_level(sphere);
+            restart=0;
+            future_collision=0;
+            window.alert("GAME OVER");
+        }
     } // end for each sphere
 } // end render model
 
 var justafter;
 var freefall_flag=0;
 var time=-1;
+var future_collision=0;
+var restart=0;
 
 function get_surface_level(sphere_bottom, inputTriangles,sphere)
 {
@@ -977,6 +1019,7 @@ var ship_Z_before;
 function check_Dead_or_Alive(sphere_front,sphere_center, inputTriangles)
 {
     var length = inputTriangles.length;
+    var closest_surface = 200;
     // console.log("sphere_front",sphere_front);
     for(var i = 0; i < length; i++)
     {
@@ -984,6 +1027,41 @@ function check_Dead_or_Alive(sphere_front,sphere_center, inputTriangles)
         if(sphere_front[1] > inputTriangles[i].limitbaseY[0] && sphere_front[1] < inputTriangles[i].limitbaseY[1])
         {
             // console.log("NUSM");
+            if(sphere_front[0] > inputTriangles[i].limitbaseX[0] && sphere_front[0] < inputTriangles[i].limitbaseX[1])
+             {
+            //     // console.log("id :",inputTriangles[i].id);
+            //     // console.log("center",sphere_center[2]);
+            //     // console.log("Z obj", inputTriangles[i].surfaceLeftRightFront[2]);
+                if(closest_surface > inputTriangles[i].surfaceLeftRightFront[2])
+                {
+                    closest_surface = inputTriangles[i].surfaceLeftRightFront[2];
+                }
+             }
+            // // spaceship too fast
+            // else if(ship_Z_before < inputTriangles[i].surfaceLeftRightFront[2] && sphere_center[2] > inputTriangles[i].surfaceLeftRightFront[2])
+            // {
+            //     return inputTriangles[i].surfaceLeftRightFront[2];
+            // }
+        }            
+    }
+    // console.log("surface : ",surface);
+    ship_Z_before=sphere_center[2];
+    if(closest_surface!=200)
+        return closest_surface;
+    else
+        return 0;       
+}
+
+function check_collision(sphere_front,sphere_center, inputTriangles)
+{
+    var length = inputTriangles.length;
+    // console.log("sphere_front",sphere_front);
+    for(var i = 0; i < length; i++)
+    {
+        // console.log(sphere_bottom[2]," ", inputTriangles[i].limitbaseZ[0]);
+        if(sphere_front[1] > inputTriangles[i].limitbaseY[0] && sphere_front[1] < inputTriangles[i].limitbaseY[1])
+        {
+            console.log("NUSM");
             if(sphere_front[0] > inputTriangles[i].limitbaseX[0] && sphere_front[0] < inputTriangles[i].limitbaseX[1])
             {
                 // console.log("id :",inputTriangles[i].id);
@@ -995,14 +1073,14 @@ function check_Dead_or_Alive(sphere_front,sphere_center, inputTriangles)
                 }
             }
             // spaceship too fast
-            else if(ship_Z_before < inputTriangles[i].surfaceLeftRightFront[2] && sphere_center[2] > inputTriangles[i].surfaceLeftRightFront[2])
-            {
-                return inputTriangles[i].surfaceLeftRightFront[2];
-            }
+            // else if(ship_Z_before < inputTriangles[i].surfaceLeftRightFront[2] && sphere_center[2] > inputTriangles[i].surfaceLeftRightFront[2])
+            // {
+            //     return inputTriangles[i].surfaceLeftRightFront[2];
+            // }
         }            
     }
     // console.log("surface : ",surface);
-    ship_Z_before=sphere_center[2];
+    // ship_Z_before=sphere_center[2];
     return 0;       
 
 }
