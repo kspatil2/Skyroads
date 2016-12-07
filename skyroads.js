@@ -931,7 +931,7 @@ function renderModels() {
         ctx.fillText("Score :"+display_score, 5, 20);
         ctx.fillText("HighScore :"+HighScore,330,20);
         ctx.fillText("Velocity :"+vel_now*100,5,40);
-        ctx.fillText("Romanov",2,60);
+        ctx.fillText("Sula",2,60);
 
         if(sphere_center[1] < 0 /*|| check_Dead_or_Alive(sphere_front,sphere_center,inputTriangles)*/||future_collision)
         {
