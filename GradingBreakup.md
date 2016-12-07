@@ -31,9 +31,10 @@ Extra credit opportunities include the following:
     2% Modeling the spaceship to look like a spaceship using different geometrical shapes.
     2% Track and display score. You can choose any scoring scale you want.
     3% Add planets beside the road map to make it more interesting
-    4% Multiple skymaps. When a certain number of frogs cross the road and river safely, a new level appears. Create a new model skyroad 	for next level.Since, modeling an entire new map will take a lot work, increased the extra credit to 4%. 
+    4% Multiple skymaps. Create a new model skyroad for next level.Since, modeling an entire new map will take a lot work, increased the extra 	      credit to 4%. 
     4% First person spaceship. Show the perspective from the cockpit of the spaceship which would be really cool.
     5% Sound and music. On certain game events, e.g. game start, movement, collision, etc. play a sound effect. 
+    5% Give a theme and bacjground story to the game.	
 
 
 

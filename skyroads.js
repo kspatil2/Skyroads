@@ -13,7 +13,7 @@ var defaultUp = vec3.fromValues(0,1,0); // default view up vector
 var lightAmbient = vec3.fromValues(1,1,1); // default light ambient emission
 var lightDiffuse = vec3.fromValues(1,1,1); // default light diffuse emission
 var lightSpecular = vec3.fromValues(1,1,1); // default light specular emission
-var lightPosition = vec3.fromValues(0.5,4,-0.4); // default light position
+var lightPosition = vec3.fromValues(1,100,75); // default light position
 var defaultlightPosition = vec3.fromValues(0.5,4,0.4); // default light position
 var rotateTheta = Math.PI/50; // how much to rotate models by with each key press
 
@@ -741,7 +741,9 @@ function renderModels() {
         viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
         Eye = vec3.add(Eye,Eye,vec3.scale(temp,lookAt,velocity));
         Center = vec3.add(Center,Center,vec3.scale(temp,lookAt,velocity));
-        // lightPosition = vec3.add(lightPosition,defaultlightPosition,vec3.subtract(temp,Eye,defaultEye));
+        lightPosition = vec3.add(lightPosition,lightPosition,vec3.scale(temp,lookAt,velocity));
+        console.log("Light: ", lightPosition);
+        console.log("Eye: ", Eye);
         // to be applied to spaceship patterns
         // console.log("HELOOOOOOO");
         // if(future_collision!=1)
@@ -774,15 +776,15 @@ function renderModels() {
             time = Math.sqrt(2 *(sphere_bottom[1]-(-1))/gravity);
             // freeFallTime=
         }
-        console.log("surface : ",surface);
+        // console.log("surface : ",surface);
         // console.log("freeFallTime : ",surface);
 
         // console.log("bottom y coordinate :", sphere_bottom[1]);
         // console.log("surface:",surface);
         // console.log
-        console.log("b:", sphere_bottom[1]);
-        console.log("s:",surface);
-        console.log("t:",sphere.translation[1]);    
+        // console.log("b:", sphere_bottom[1]);
+        // console.log("s:",surface);
+        // console.log("t:",sphere.translation[1]);    
         // emulate freefall
         if(sphere_bottom[1]-surface>0.0001 && spaceJump==0 && freeFallTime < time)
         {
@@ -801,10 +803,10 @@ function renderModels() {
         }
         else if(freefall_flag==1)
         {
-            console.log("b:", sphere_bottom[1]);
-            console.log("s:",surface);
+            // console.log("b:", sphere_bottom[1]);
+            // console.log("s:",surface);
             sphere.translation[1]=surface+sphere.r-sphere.y;
-            console.log("t:",sphere.translation[1]);
+            // console.log("t:",sphere.translation[1]);
             freefall_flag=0;
             freeFallTime=0;
         }
@@ -839,7 +841,7 @@ function renderModels() {
             }
             else if(right==1 && left ==0)
             {
-                console.log("going right");
+                // console.log("going right");
                 vec3.add(sidetemp,sphere.translation,vec3.scale(temp,viewRight,-v));   
                 // console.log(sidetemp[0]);
                 temp2 = vec3.add(sphere_right,sidetemp,vec3.fromValues(sphere.x+sphere.r,sphere.y,sphere.z));        
@@ -869,7 +871,7 @@ function renderModels() {
         var front_collision = check_Dead_or_Alive(sphere_front,sphere_center,inputTriangles);
         if(check_collision(sphere_front,sphere_center,inputTriangles)!=0)
         {
-            console.log("Its collided now");
+            // console.log("Its collided now");
             future_collision=1; // well, actually its in the present           
         }
         
@@ -882,9 +884,9 @@ function renderModels() {
             vec3.add(temp,nextZ,vec3.fromValues(sphere.x,sphere.y,sphere.z+sphere.r));        
 
             // console.log("Future collision");
-            console.log("sphere_front_now: ",sphere.z+sphere.translation[2]+sphere.r);
-            console.log("front Collision: ",front_collision);
-            console.log("sphere_front_later: ",temp[2]);
+            // console.log("sphere_front_now: ",sphere.z+sphere.translation[2]+sphere.r);
+            // console.log("front Collision: ",front_collision);
+            // console.log("sphere_front_later: ",temp[2]);
 
             if(temp[2] > front_collision && front_collision > sphere_front[2])
             {
@@ -1076,7 +1078,7 @@ function check_collision(sphere_front,sphere_center, inputTriangles)
         // console.log(sphere_bottom[2]," ", inputTriangles[i].limitbaseZ[0]);
         if(sphere_front[1] > inputTriangles[i].limitbaseY[0] && sphere_front[1] < inputTriangles[i].limitbaseY[1])
         {
-            console.log("NUSM");
+            // console.log("NUSM");
             if(sphere_front[0] > inputTriangles[i].limitbaseX[0] && sphere_front[0] < inputTriangles[i].limitbaseX[1])
             {
                 // console.log("id :",inputTriangles[i].id);
