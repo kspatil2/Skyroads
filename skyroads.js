@@ -4,7 +4,8 @@
 //https://ncsucgclass.github.io/prog3/triangles.json
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/4pavj"; // Map#2
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/24acb"; // Map#3
-const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/2gs71";
+// const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/2gs71"; // Current 
+const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/3mtmn";
 const INPUT_SPHERES_URL = "https://api.myjson.com/bins/1hwv3"; // spheres file loc
 var defaultEye = vec3.fromValues(0.5,0.8,-1); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.8,0.5); // default view direction in world space
@@ -895,28 +896,8 @@ function renderModels() {
         }
         // console.log(s)
 
-        score=Math.floor(Eye[2]+1);
-        if(sphere_center[1] < 0 /*|| check_Dead_or_Alive(sphere_front,sphere_center,inputTriangles)*/||future_collision)
-        {
-            if(score > HighScore)
-            {
-                HighScore = score;
-                // window.alert("New High Score:"+score);
-            }
-            // else 
-                // window.alert("GAME OVER. TRY AGAIN");
-                restart=1;
-            // restart_level(sphere);
-        }
+        
 
-        var vel_now = velocity.toFixed(2);
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.font = '15pt Calibri';
-        ctx.fillStyle = 'white';
-        ctx.fillText("Score :"+score, 5, 20);
-        ctx.fillText("HighScore :"+HighScore,330,20);
-        ctx.fillText("Velocity :"+vel_now*100,5,40);
-        ctx.fillText("Romanov",2,60);
 
         // console.log(vec3.add(temp,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z)));
         mat4.fromTranslation(instanceTransform,vec3.fromValues(sphere.x,sphere.y,sphere.z)); // recenter sphere
@@ -938,13 +919,46 @@ function renderModels() {
 
         // draw a transformed instance of the sphere
         gl.drawElements(gl.TRIANGLES,triSetSizes[triSetSizes.length-1],gl.UNSIGNED_SHORT,0); // render
-        if(restart ==1)
+        
+        score=Math.ceil(Eye[2]+1);
+        var vel_now = velocity.toFixed(2);
+        var display_score = current_score+score;
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.font = '15pt Calibri';
+        ctx.fillStyle = 'white';
+        ctx.fillText("Score :"+display_score, 5, 20);
+        ctx.fillText("HighScore :"+HighScore,330,20);
+        ctx.fillText("Velocity :"+vel_now*100,5,40);
+        ctx.fillText("Romanov",2,60);
+
+        if(sphere_center[1] < 0 /*|| check_Dead_or_Alive(sphere_front,sphere_center,inputTriangles)*/||future_collision)
         {
-            restart_level(sphere);
-            restart=0;
-            future_collision=0;
-            window.alert("GAME OVER");
+            if(score+current_score > HighScore)
+            {
+                HighScore = current_score+score;
+                // window.alert("New High Score:"+score);
+            }
+            
+            if(Eye[2] >= 150)
+            {
+                current_score = current_score+score; 
+                level_completed=1; // add +1 till 10
+                var offset = vec3.fromValues(2,2,0);
+                Eye = vec3.add(Eye,defaultEye,offset);
+                Center = vec3.add(Center,defaultCenter,offset); 
+                sphere.translation = vec3.add(sphere.translation,vec3.fromValues(0,0,0),offset); 
+                velocity=0;
+                window.alert("LEVEL COMPLETED");   
+            }   
+            else
+            {
+                restart_level(sphere);
+                restart=0;
+                future_collision=0;
+                window.alert("GAME OVER");
+            }
         }
+
     } // end for each sphere
 } // end render model
 
@@ -953,7 +967,8 @@ var freefall_flag=0;
 var time=-1;
 var future_collision=0;
 var restart=0;
-
+var level_completed=0;
+var current_score=0;
 function get_surface_level(sphere_bottom, inputTriangles,sphere)
 {
     var length = inputTriangles.length;
@@ -1087,11 +1102,12 @@ function check_collision(sphere_front,sphere_center, inputTriangles)
 
 function restart_level(sphere)
 {
-    Eye = vec3.clone(defaultEye); // eye position in world space
-    Center = vec3.clone(defaultCenter); // view direction in world space
+    Eye = vec3.fromValues(Eye[0],Eye[1],defaultEye[2]); // eye position in world space
+    Center = vec3.fromValues(Center[0],Center[1],defaultCenter[2]); // view direction in world space
     Up = vec3.clone(defaultUp); // view up vector in world space
     Score=0;
-    sphere.translation = vec3.fromValues(0,0,0);
+    var offset = vec3.fromValues(2*level_completed,2*level_completed,0);
+    sphere.translation = vec3.add(sphere.translation,vec3.fromValues(0,0,0),offset); 
     velocity=0;
 }
 
