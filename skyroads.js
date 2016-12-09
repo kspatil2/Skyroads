@@ -5,7 +5,8 @@
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/4pavj"; // Map#2
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/24acb"; // Map#3
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/2gs71"; // Current 
-const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/3mtmn";
+//const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/3mtmn"; // 2 levels 
+const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/1zl2p";
 const INPUT_SPHERES_URL = "https://api.myjson.com/bins/1hwv3"; // spheres file loc
 var defaultEye = vec3.fromValues(0.5,0.8,-1); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.8,0.5); // default view direction in world space
@@ -13,7 +14,7 @@ var defaultUp = vec3.fromValues(0,1,0); // default view up vector
 var lightAmbient = vec3.fromValues(1,1,1); // default light ambient emission
 var lightDiffuse = vec3.fromValues(1,1,1); // default light diffuse emission
 var lightSpecular = vec3.fromValues(1,1,1); // default light specular emission
-var lightPosition = vec3.fromValues(1,100,75); // default light position
+var lightPosition = vec3.fromValues(25,100,75); // default light position
 var defaultlightPosition = vec3.fromValues(0.5,4,0.4); // default light position
 var rotateTheta = Math.PI/50; // how much to rotate models by with each key press
 
@@ -63,6 +64,7 @@ var sidegravity = 0.025;
 var left=0,right=0;
 // var freeFallTime=0;
 // var freefall_velocity=0;
+var NUMBER_OF_LEVELS = 5;
 var Score=0;
 var HighScore = 0;
 
@@ -742,8 +744,8 @@ function renderModels() {
         Eye = vec3.add(Eye,Eye,vec3.scale(temp,lookAt,velocity));
         Center = vec3.add(Center,Center,vec3.scale(temp,lookAt,velocity));
         lightPosition = vec3.add(lightPosition,lightPosition,vec3.scale(temp,lookAt,velocity));
-        console.log("Light: ", lightPosition);
-        console.log("Eye: ", Eye);
+        // console.log("Light: ", lightPosition);
+        // console.log("Eye: ", Eye);
         // to be applied to spaceship patterns
         // console.log("HELOOOOOOO");
         // if(future_collision!=1)
@@ -944,13 +946,20 @@ function renderModels() {
             if(Eye[2] >= 150)
             {
                 current_score = current_score+score; 
-                level_completed=1; // add +1 till 10
-                var offset = vec3.fromValues(2,2,0);
-                Eye = vec3.add(Eye,defaultEye,offset);
-                Center = vec3.add(Center,defaultCenter,offset); 
-                sphere.translation = vec3.add(sphere.translation,vec3.fromValues(0,0,0),offset); 
-                velocity=0;
-                window.alert("LEVEL COMPLETED");   
+                level_completed=level_completed+1; // add +1 till 10
+                console.log(level_completed);
+                var offset = vec3.fromValues(10,0,0);
+                if(level_completed<5)
+                {
+                    sphere.translation = vec3.add(sphere.translation,vec3.fromValues(0,0,0),vec3.scale(offset,offset,level_completed)); 
+                    Center = vec3.add(Center,defaultCenter,offset); 
+                    Eye = vec3.add(Eye,defaultEye,offset);
+                    velocity=0;
+                    window.alert("LEVEL COMPLETED");   
+                }
+                else
+                    window.alert("GAME COMPLETED");      
+
             }   
             else
             {
@@ -1104,11 +1113,11 @@ function check_collision(sphere_front,sphere_center, inputTriangles)
 
 function restart_level(sphere)
 {
-    Eye = vec3.fromValues(Eye[0],Eye[1],defaultEye[2]); // eye position in world space
-    Center = vec3.fromValues(Center[0],Center[1],defaultCenter[2]); // view direction in world space
+    Eye = vec3.fromValues(Eye[0],defaultEye[1],defaultEye[2]); // eye position in world space
+    Center = vec3.fromValues(Center[0],defaultCenter[1],defaultCenter[2]); // view direction in world space
     Up = vec3.clone(defaultUp); // view up vector in world space
     Score=0;
-    var offset = vec3.fromValues(2*level_completed,2*level_completed,0);
+    var offset = vec3.fromValues(10*level_completed,0,0);
     sphere.translation = vec3.add(sphere.translation,vec3.fromValues(0,0,0),offset); 
     velocity=0;
 }
