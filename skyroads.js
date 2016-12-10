@@ -6,7 +6,7 @@
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/24acb"; // Map#3
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/2gs71"; // Current 
 //const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/3mtmn"; // 2 levels 
-const INPUT_TRIANGLES_URL ="https://kspatil2.github.io/five_levels.json";
+const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/4f1oz";
 const INPUT_SPHERES_URL = "https://kspatil2.github.io/spaceship1.json"; // spheres file loc
 var defaultEye = vec3.fromValues(0.5,0.8,-1); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.8,0.5); // default view direction in world space
