@@ -6,15 +6,15 @@
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/24acb"; // Map#3
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/2gs71"; // Current 
 //const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/3mtmn"; // 2 levels 
-const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/1zl2p";
-const INPUT_SPHERES_URL = "https://api.myjson.com/bins/1hwv3"; // spheres file loc
+const INPUT_TRIANGLES_URL ="https://kspatil2.github.io/five_levels.json";
+const INPUT_SPHERES_URL = "https://kspatil2.github.io/spaceship1.json"; // spheres file loc
 var defaultEye = vec3.fromValues(0.5,0.8,-1); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.8,0.5); // default view direction in world space
 var defaultUp = vec3.fromValues(0,1,0); // default view up vector
 var lightAmbient = vec3.fromValues(1,1,1); // default light ambient emission
 var lightDiffuse = vec3.fromValues(1,1,1); // default light diffuse emission
 var lightSpecular = vec3.fromValues(1,1,1); // default light specular emission
-var lightPosition = vec3.fromValues(25,100,75); // default light position
+var lightPosition = vec3.fromValues(20,300,75); // default light position
 var defaultlightPosition = vec3.fromValues(0.5,4,0.4); // default light position
 var rotateTheta = Math.PI/50; // how much to rotate models by with each key press
 
@@ -177,7 +177,8 @@ function handleKeyDown(event) {
                 // translateModel(vec3.scale(temp,viewRight,viewDelta));
             break;
         case "ArrowUp": // select next sphere
-                velocity = velocity + acceleration*time;
+                if(level_transition==0)
+                    velocity = velocity + acceleration*time;
             break;
         case "ArrowDown": // select previous sphere
                 if(velocity>0)
@@ -749,7 +750,7 @@ function renderModels() {
         // to be applied to spaceship patterns
         // console.log("HELOOOOOOO");
         // if(future_collision!=1)
-            vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,lookAt,velocity));   
+        vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,lookAt,velocity));   
 
         if(spaceJump==1 && spaceJumpCounter<jumpTime)
         {
@@ -794,12 +795,10 @@ function renderModels() {
             var v=0;
             v = freefall_velocity - gravity * freeFallTime;
             freeFallTime = freeFallTime + time/20;   
-            // if(justafter>surface)
             {
                 var a = vec3.create();
                 vec3.add(sphere.translation,sphere.translation,vec3.scale(temp,Up,v));      
                 a=vec3.add(a,sphere.translation,vec3.fromValues(sphere.x,sphere.y-sphere.r,sphere.z));
-                justafter = a[1];
                 freefall_flag=1;
             }
         }
@@ -821,7 +820,6 @@ function renderModels() {
         }
         else if(right==1 && left ==0)
             side_surface = get_side_surface_level(sphere_right, inputTriangles, right); // right = 0 for right
-        // console.log(side_surface);
         if(sideJump==1 && sideJumpCounter<sidejumpTime)
         {
             var v;
@@ -832,7 +830,8 @@ function renderModels() {
             var sidetemp = vec3.create(), temp2 = vec3.create();
             if(left == 1 && right==0)
             {
-                // console.log("going left");
+                console.log("going left");
+                 console.log(side_surface);
                 vec3.add(sidetemp,sphere.translation,vec3.scale(temp,viewRight,v));
                 temp2 = vec3.add(sphere_left,sidetemp,vec3.fromValues(sphere.x-sphere.r,sphere.y,sphere.z));        
                 // console.log(sidetemp[0]);
@@ -843,7 +842,8 @@ function renderModels() {
             }
             else if(right==1 && left ==0)
             {
-                // console.log("going right");
+                console.log("going right");
+                 console.log(side_surface);
                 vec3.add(sidetemp,sphere.translation,vec3.scale(temp,viewRight,-v));   
                 // console.log(sidetemp[0]);
                 temp2 = vec3.add(sphere_right,sidetemp,vec3.fromValues(sphere.x+sphere.r,sphere.y,sphere.z));        
@@ -900,9 +900,6 @@ function renderModels() {
         }
         // console.log(s)
 
-        
-
-
         // console.log(vec3.add(temp,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z)));
         mat4.fromTranslation(instanceTransform,vec3.fromValues(sphere.x,sphere.y,sphere.z)); // recenter sphere
         mat4.scale(mMatrix,mMatrix,vec3.fromValues(sphere.r,sphere.r,sphere.r)); // change size
@@ -924,18 +921,75 @@ function renderModels() {
         // draw a transformed instance of the sphere
         gl.drawElements(gl.TRIANGLES,triSetSizes[triSetSizes.length-1],gl.UNSIGNED_SHORT,0); // render
         
-        score=Math.ceil(Eye[2]+1);
-        var vel_now = velocity.toFixed(2);
-        var display_score = current_score+score;
+        var display_score=0;
+        if(level_transition!=1)
+        {
+            score=Math.ceil(Eye[2]+1);
+            fuel_level = fuel_level-0.002;
+            display_score = current_score+score;
+        }
+            oxygen_level=oxygen_level-0.001;
+        
+        var vel_now = velocity*100;
+        var current_level = level_completed+1;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.font = '15pt Calibri';
         ctx.fillStyle = 'white';
         ctx.fillText("Score :"+display_score, 5, 20);
         ctx.fillText("HighScore :"+HighScore,330,20);
-        ctx.fillText("Velocity :"+vel_now*100,5,40);
-        ctx.fillText("Sula",2,60);
+        ctx.fillText("Velocity :"+vel_now.toFixed(2),5,40);
+        ctx.fillText("Level :"+current_level,210,480);
+        ctx.fillText("Oxygen : "+oxygen_level.toFixed(0),2,60);
+        ctx.fillText("Fuel : "+fuel_level.toFixed(0),2,80);
 
-        if(sphere_center[1] < 0 /*|| check_Dead_or_Alive(sphere_front,sphere_center,inputTriangles)*/||future_collision)
+        if(level_transition==1)
+        {   
+            if(temp_peak_velocity>0)
+            {
+                // console.log("pappa");
+                // console.log(temp_peak_velocity);
+                level_transition=0;
+                Eye[2]=defaultEye[2];
+                Center[2]=defaultCenter[2];
+                temp_peak_velocity=0;
+                transition_init_flag=0;
+                // console.log(Eye);
+            }   
+            else if(transition_init_flag==0)
+            {
+                // console.log("pappu");
+                var offset = vec3.fromValues(10,0,0);
+                Center = vec3.add(Center,defaultCenter,vec3.scale(offset,offset,level_completed)); 
+                Eye = vec3.add(Eye,defaultEye,offset);
+                Eye[2]=Eye[2]+150;
+                Center[2]=Center[2]+150;
+                transition_init_flag=1;
+            }
+            else
+            {
+                var v,temp;
+                
+                if(transitionCounter<0.345)
+                {
+                    v = -transition_acceleration*transitionCounter;
+                }
+                else{
+                    // console.log("Haaloo ");
+                    v =  -2 + transition_acceleration*(transitionCounter-0.345);
+                     
+                }
+                // console.log(oxygen);
+                    temp_peak_velocity=v;
+                transitionCounter = transitionCounter + transition_time/10000;
+                console.log("velocity :",v );
+                console.log("temp peak: ", temp_peak_velocity);
+                console.log("time: ", transitionCounter);
+                vec3.add(Eye,Eye,vec3.scale(temp,lookAt,v));   
+                vec3.add(Center,Center,vec3.scale(temp,lookAt,v));
+            }
+
+        }
+        else if(sphere_center[1] < 0 ||future_collision||oxygen_level==0||fuel_level==0)
         {
             if(score+current_score > HighScore)
             {
@@ -947,13 +1001,14 @@ function renderModels() {
             {
                 current_score = current_score+score; 
                 level_completed=level_completed+1; // add +1 till 10
-                console.log(level_completed);
+                // console.log(level_completed);
                 var offset = vec3.fromValues(10,0,0);
-                if(level_completed<5)
+                if(level_completed<NUMBER_OF_LEVELS)
                 {
-                    sphere.translation = vec3.add(sphere.translation,vec3.fromValues(0,0,0),vec3.scale(offset,offset,level_completed)); 
-                    Center = vec3.add(Center,defaultCenter,offset); 
-                    Eye = vec3.add(Eye,defaultEye,offset);
+                    sphere.translation = vec3.add(sphere.translation,vec3.fromValues(0,0,0),vec3.scale(offset,offset,level_completed));
+                    level_transition=1;
+                    // Center = vec3.add(Center,defaultCenter,offset); 
+                    // Eye = vec3.add(Eye,defaultEye,offset);
                     velocity=0;
                     window.alert("LEVEL COMPLETED");   
                 }
@@ -973,13 +1028,22 @@ function renderModels() {
     } // end for each sphere
 } // end render model
 
-var justafter;
+var oxygen_level=100;
+var fuel_level=200;
+
 var freefall_flag=0;
 var time=-1;
 var future_collision=0;
 var restart=0;
 var level_completed=0;
 var current_score=0;
+var level_transition=0;
+var transition_velocity = 60;
+var transition_time = 110;
+var transition_acceleration = 5.6;
+var transition_init_flag=0;
+var transitionCounter=0;
+var temp_peak_velocity=0;
 function get_surface_level(sphere_bottom, inputTriangles,sphere)
 {
     var length = inputTriangles.length;
@@ -1012,17 +1076,14 @@ function get_side_surface_level(sphere_side, inputTriangles, side)
     if(side==0)
         surface= -10;
     else if(side ==1)
-        surface = 10;
+        surface = 10*NUMBER_OF_LEVELS+100; // greater than all edges to the right
 
     for(var i = 0; i < length; i++)
     {
-        // console.log(sphere_bottom[2]," ", inputTriangles[i].limitbaseZ[0]);
         if(sphere_side[2] > inputTriangles[i].limitbaseZ[0] && sphere_side[2] < inputTriangles[i].limitbaseZ[1])
         {
             if(sphere_side[1] > inputTriangles[i].limitbaseY[0] && sphere_side[1] < inputTriangles[i].limitbaseY[1])
             {
-                // console.log("sphere_side: ", sphere_side);
-                // choosing the closest right edge for left
                 if(side == 0 && surface < inputTriangles[i].surfaceLeftRightFront[1] && sphere_side[0] > inputTriangles[i].surfaceLeftRightFront[1])
                 {
                     surface = inputTriangles[i].surfaceLeftRightFront[1];

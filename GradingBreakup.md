@@ -34,7 +34,7 @@ Extra credit opportunities include the following:
     4% Multiple skymaps. Create a new model skyroad for next level.Since, modeling an entire new map will take a lot work, increased the extra 	      credit to 4%. 
     4% First person spaceship. Show the perspective from the cockpit of the spaceship which would be really cool.
     5% Sound and music. On certain game events, e.g. game start, movement, collision, etc. play a sound effect. 
-    5% Give a theme and bacjground story to the game.	
+    5% Give a theme and background story to the game.
 
 
 

@@ -40,7 +40,7 @@ int main()
 			cin >> color[j];
 		}
 
-		cout << "Enter opposite vertices :";
+		// cout << "Enter opposite vertices :";
 		for(int j=0; j<3;j++)
 		{
 			cin >> start_vert[j];
