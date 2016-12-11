@@ -419,6 +419,7 @@ function loadModels() {
             var whichSetTri; // index of triangle in current triangle set
             var vtxToAdd; // vtx coords to add to the coord array
             var normToAdd; // vtx normal to add to the coord array
+            var texToAdd = []; //
             var triToAdd; // tri indices to add to the index array
             var maxCorner = vec3.fromValues(Number.MIN_VALUE,Number.MIN_VALUE,Number.MIN_VALUE); // bbox corner
             var minCorner = vec3.fromValues(Number.MAX_VALUE,Number.MAX_VALUE,Number.MAX_VALUE); // other corner
@@ -434,13 +435,19 @@ function loadModels() {
                 inputTriangles[whichSet].xAxis = vec3.fromValues(1,0,0); // model X axis
                 inputTriangles[whichSet].yAxis = vec3.fromValues(0,1,0); // model Y axis 
 
+                initTexture(inputTriangles[whichSet].material.texture,whichSet);    
                 // set up the vertex and normal arrays, define model center and axes
                 inputTriangles[whichSet].glVertices = []; // flat coord list for webgl
                 inputTriangles[whichSet].glNormals = []; // flat normal list for webgl
+
+                inputTriangles[whichSet].textureCoords = []; //
+
                 var numVerts = inputTriangles[whichSet].vertices.length; // num vertices in tri set
                 for (whichSetVert=0; whichSetVert<numVerts; whichSetVert++) { // verts in set
                     vtxToAdd = inputTriangles[whichSet].vertices[whichSetVert]; // get vertex to add
+                    texToAdd = inputTriangles[whichSet].uvs[whichSetVert];
                     normToAdd = inputTriangles[whichSet].normals[whichSetVert]; // get normal to add
+                    inputTriangles[whichSet].textureCoords.push(texToAdd[0],texToAdd[1]);
                     inputTriangles[whichSet].glVertices.push(vtxToAdd[0],vtxToAdd[1],vtxToAdd[2]); // put coords in set coord list
                     inputTriangles[whichSet].glNormals.push(normToAdd[0],normToAdd[1],normToAdd[2]); // put normal in set coord list
                     vec3.max(maxCorner,maxCorner,vtxToAdd); // update world bounding box corner maxima
@@ -456,6 +463,9 @@ function loadModels() {
                 normalBuffers[whichSet] = gl.createBuffer(); // init empty webgl set normal component buffer
                 gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffers[whichSet]); // activate that buffer
                 gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(inputTriangles[whichSet].glNormals),gl.STATIC_DRAW); // data in
+                textureBuffers[whichSet] = gl.createBuffer(); // init empty webgl set normal component buffer
+                gl.bindBuffer(gl.ARRAY_BUFFER,textureBuffers[whichSet]); // activate that buffer
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(inputTriangles[whichSet].textureCoords),gl.STATIC_DRAW); // data in
             
                 // set up the triangle index array, adjusting indices across sets
                 inputTriangles[whichSet].glTriangles = []; // flat index list for webgl
@@ -757,7 +767,8 @@ function renderModels() {
         gl.vertexAttribPointer(textureCoordAttribute,2,gl.FLOAT,false,0,0); // feed
 
         gl.uniform1f(alphaUniform, inputTriangles[whichTriSet].material.alpha);
-        if(inputTriangles[whichTriSet].material.texture)
+        // console.log(inputTriangles[whichTriSet].material.texture);
+        if(true)
         {
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, kpTexture[whichTriSet]);
@@ -1283,7 +1294,7 @@ function initTexture(texture_path,whichSet)
     }
     if(texture_path)
         kpTexture[whichSet].image.src = "https://kspatil2.github.io/" + texture_path;
-    console.log(texture_path);
+    console.log("Hello : ",texture_path);
 }
 
 function initSphereTexture(texture_path,whichSet) 
