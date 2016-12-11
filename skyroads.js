@@ -6,7 +6,7 @@
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/24acb"; // Map#3
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/2gs71"; // Current 
 //const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/3mtmn"; // 2 levels 
-const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/4f1oz";
+const INPUT_TRIANGLES_URL ="https://kspatil2.github.io/five_simple_levels.json";
 const INPUT_SPHERES_URL = "https://kspatil2.github.io/spaceship1.json"; // spheres file loc
 var defaultEye = vec3.fromValues(0.5,0.8,-1); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.8,0.5); // default view direction in world space
@@ -26,19 +26,24 @@ var inputSpheres = []; // the sphere data as loaded from input files
 var numSpheres = 0; // how many spheres in the input scene
 var vertexBuffers = []; // this contains vertex coordinate lists by set, in triples
 var normalBuffers = []; // this contains normal component lists by set, in triples
+textureBuffers = [];
 var triSetSizes = []; // this contains the size of each triangle set
 var triangleBuffers = []; // lists of indices into vertexBuffers by set, in triples
 var viewDelta = 0; // how much to displace view with each key press
 
 /* shader parameter locations */
 var vPosAttribLoc; // where to put position for vertex shader
+var vNormAttribLoc;
+var textureCoordAttribute;
+var samplerUniform;
+var alphaUniform;
+var isTextureUniform;
 var ambientULoc; // where to put ambient reflecivity for fragment shader
 var diffuseULoc; // where to put diffuse reflecivity for fragment shader
 var specularULoc; // where to put specular reflecivity for fragment shader
 var shininessULoc; // where to put specular exponent for fragment shader
 var mMatrixULoc; // where to put model matrix for vertex shader
 var pvmMatrixULoc; // where to put project model view matrix for vertex shader
-
 /* interaction variables */
 var Eye = vec3.clone(defaultEye); // eye position in world space
 var Center = vec3.clone(defaultCenter); // view direction in world space
@@ -355,7 +360,9 @@ function loadModels() {
             else { // good number longitude steps
             
                 // make vertices and normals
+                var textureCoordData = [];
                 var sphereVertices = [0,-1,0]; // vertices to return, init to south pole
+                textureCoordData.push(0.5,1);
                 var angleIncr = (Math.PI+Math.PI) / numLongSteps; // angular increment 
                 var latLimitAngle = angleIncr * (Math.floor(numLongSteps/4)-1); // start/end lat angle
                 var latRadius, latY; // radius and Y at current latitude
@@ -363,9 +370,16 @@ function loadModels() {
                     latRadius = Math.cos(latAngle); // radius of current latitude
                     latY = Math.sin(latAngle); // height at current latitude
                     for (var longAngle=0; longAngle<2*Math.PI; longAngle+=angleIncr) // for each long
+                    {
+                        var u =  1-longAngle / (2*Math.PI);
+                        var v =  (Math.PI/2 + latAngle)/Math.PI;
                         sphereVertices.push(latRadius*Math.sin(longAngle),latY,latRadius*Math.cos(longAngle));
+                        textureCoordData.push(u,v);
+
+                    }   
                 } // end for each latitude
                 sphereVertices.push(0,1,0); // add north pole
+                textureCoordData.push(0.5,0);
                 var sphereNormals = sphereVertices.slice(); // for this sphere, vertices = normals; return these
 
                 // make triangles, from south pole to middle latitudes to north pole
@@ -387,7 +401,7 @@ function loadModels() {
                     sphereTriangles.push(whichLong,sphereVertices.length/3-1,whichLong+1);
                 sphereTriangles.push(sphereVertices.length/3-2,sphereVertices.length/3-1,sphereVertices.length/3-numLongSteps-1); // longitude wrap
             } // end if good number longitude steps
-            return({vertices:sphereVertices, normals:sphereNormals, triangles:sphereTriangles});
+            return({vertices:sphereVertices, normals:sphereNormals, triangles:sphereTriangles, textures:textureCoordData});
         } // end try
         
         catch(e) {
@@ -472,6 +486,8 @@ function loadModels() {
                 for (var whichSphere=0; whichSphere<numSpheres; whichSphere++) {
                     sphere = inputSpheres[whichSphere];
                     sphere.on = false; // spheres begin without highlight
+                    initSphereTexture(sphere.texture,whichSphere);
+                    console.log(sphere.texture);
                     sphere.translation = vec3.fromValues(0,0,0); // spheres begin without translation
                     sphere.xAxis = vec3.fromValues(1,0,0); // sphere X axis
                     sphere.yAxis = vec3.fromValues(0,1,0); // sphere Y axis 
@@ -493,7 +509,10 @@ function loadModels() {
                 normalBuffers.push(gl.createBuffer()); // init empty webgl sphere vertex normal buffer
                 gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffers[normalBuffers.length-1]); // activate that buffer
                 gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(oneSphere.normals),gl.STATIC_DRAW); // data in
-        
+                textureBuffers.push(gl.createBuffer()); // init empty webgl sphere vertex normal buffer
+                gl.bindBuffer(gl.ARRAY_BUFFER,textureBuffers[textureBuffers.length-1]); // activate that buffer
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(oneSphere.textures),gl.STATIC_DRAW); // data in
+
                 triSetSizes.push(oneSphere.triangles.length);
 
                 // send the triangle indices to webGL
@@ -516,12 +535,15 @@ function setupShaders() {
     var vShaderCode = `
         attribute vec3 aVertexPosition; // vertex position
         attribute vec3 aVertexNormal; // vertex normal
-        
+        attribute vec2 aTextureCoord;
+
         uniform mat4 umMatrix; // the model matrix
         uniform mat4 upvmMatrix; // the project view model matrix
         
         varying vec3 vWorldPos; // interpolated world position of vertex
         varying vec3 vVertexNormal; // interpolated normal for frag shader
+
+        varying vec2 vTextureCoord;
 
         void main(void) {
             
@@ -533,6 +555,7 @@ function setupShaders() {
             // vertex normal (assume no non-uniform scale)
             vec4 vWorldNormal4 = umMatrix * vec4(aVertexNormal, 0.0);
             vVertexNormal = normalize(vec3(vWorldNormal4.x,vWorldNormal4.y,vWorldNormal4.z)); 
+            vTextureCoord = aTextureCoord;
         }
     `;
     
@@ -559,6 +582,11 @@ function setupShaders() {
         varying vec3 vWorldPos; // world xyz of fragment
         varying vec3 vVertexNormal; // normal of fragment
             
+        varying vec2 vTextureCoord; 
+        uniform float uAlpha;
+        uniform int isTexture;     
+
+        uniform sampler2D uSampler;
         void main(void) {
         
             // ambient term
@@ -576,9 +604,18 @@ function setupShaders() {
             float highlight = pow(max(0.0,dot(normal,halfVec)),uShininess);
             vec3 specular = uSpecular*uLightSpecular*highlight; // specular term
             
+            vec4 fragmentColor;    
             // combine to output color
             vec3 colorOut = ambient + diffuse + specular; // no specular yet
-            gl_FragColor = vec4(colorOut, 1.0); 
+            if(isTexture==1)
+            {
+                fragmentColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+                gl_FragColor = vec4(fragmentColor.rgb * colorOut, fragmentColor.a * uAlpha); 
+            }
+            else
+            {
+                gl_FragColor = vec4(colorOut, 1.0 * uAlpha); 
+            }
         }
     `;
     
@@ -613,6 +650,8 @@ function setupShaders() {
                 gl.enableVertexAttribArray(vPosAttribLoc); // connect attrib to array
                 vNormAttribLoc = gl.getAttribLocation(shaderProgram, "aVertexNormal"); // ptr to vertex normal attrib
                 gl.enableVertexAttribArray(vNormAttribLoc); // connect attrib to array
+                textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+                gl.enableVertexAttribArray(textureCoordAttribute);
                 
                 // locate vertex uniforms
                 mMatrixULoc = gl.getUniformLocation(shaderProgram, "umMatrix"); // ptr to mmat
@@ -628,6 +667,9 @@ function setupShaders() {
                 diffuseULoc = gl.getUniformLocation(shaderProgram, "uDiffuse"); // ptr to diffuse
                 specularULoc = gl.getUniformLocation(shaderProgram, "uSpecular"); // ptr to specular
                 shininessULoc = gl.getUniformLocation(shaderProgram, "uShininess"); // ptr to shininess
+                samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+                alphaUniform = gl.getUniformLocation(shaderProgram, "uAlpha");
+                isTextureUniform = gl.getUniformLocation(shaderProgram, "isTexture");
                 
                 // pass global constants into fragment uniforms
                 gl.uniform3fv(eyePositionULoc,Eye); // pass in the eye's position
@@ -711,6 +753,21 @@ function renderModels() {
         gl.vertexAttribPointer(vPosAttribLoc,3,gl.FLOAT,false,0,0); // feed
         gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffers[whichTriSet]); // activate
         gl.vertexAttribPointer(vNormAttribLoc,3,gl.FLOAT,false,0,0); // feed
+        gl.bindBuffer(gl.ARRAY_BUFFER,textureBuffers[whichTriSet]); // activate
+        gl.vertexAttribPointer(textureCoordAttribute,2,gl.FLOAT,false,0,0); // feed
+
+        gl.uniform1f(alphaUniform, inputTriangles[whichTriSet].material.alpha);
+        if(inputTriangles[whichTriSet].material.texture)
+        {
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, kpTexture[whichTriSet]);
+            gl.uniform1i(samplerUniform, 0);
+            gl.uniform1i(isTextureUniform, 1);
+        }
+        else
+        {
+            gl.uniform1i(isTextureUniform, 0);   
+        }
 
         // triangle buffer: activate and render
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffers[whichTriSet]); // activate
@@ -724,6 +781,8 @@ function renderModels() {
     gl.vertexAttribPointer(vPosAttribLoc,3,gl.FLOAT,false,0,0); // feed vertex buffer to shader
     gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffers[normalBuffers.length-1]); // activate normal buffer
     gl.vertexAttribPointer(vNormAttribLoc,3,gl.FLOAT,false,0,0); // feed normal buffer to shader
+    gl.bindBuffer(gl.ARRAY_BUFFER,textureBuffers[textureBuffers.length-1]); // activate vertex buffer
+    gl.vertexAttribPointer(textureCoordAttribute,2,gl.FLOAT,false,0,0); // feed vertex buffer to shader
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffers[triangleBuffers.length-1]); // activate tri buffer
     
     for (var whichSphere=0; whichSphere<numSpheres; whichSphere++) {
@@ -731,6 +790,22 @@ function renderModels() {
         
         // define model transform, premult with pvmMatrix, feed to shader
         makeModelTransform(sphere);
+
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.enable(gl.BLEND);
+        gl.depthMask(false);
+        gl.uniform1f(alphaUniform, sphere.alpha);
+        if(sphere.texture)
+        {
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, skpTexture[whichSphere]);
+            gl.uniform1i(samplerUniform, 0)            
+            gl.uniform1i(isTextureUniform, 1);
+        }
+        else
+        {
+            gl.uniform1i(isTextureUniform, 0);   
+        }
 
         var sphere_center = vec3.create(), sphere_bottom = vec3.create(); sphere_front = vec3.create();sphere_left = vec3.create();sphere_right = vec3.create();       
         sphere_center = vec3.add(sphere_center,sphere.translation,vec3.fromValues(sphere.x,sphere.y,sphere.z));        
@@ -1196,3 +1271,51 @@ function main() {
 } // end main
 
 
+
+function initTexture(texture_path,whichSet) 
+{
+    kpTexture[whichSet] = gl.createTexture();
+    kpTexture[whichSet].image = new Image();    
+    kpTexture[whichSet].image.crossOrigin = ''; 
+    kpTexture[whichSet].image.onload = function () 
+    {
+        handleLoadedTexture(kpTexture[whichSet])
+    }
+    if(texture_path)
+        kpTexture[whichSet].image.src = "https://ncsucgclass.github.io/prog3/" + texture_path;
+    console.log(texture_path);
+}
+
+function initSphereTexture(texture_path,whichSet) 
+{
+    skpTexture[whichSet] = gl.createTexture();
+    skpTexture[whichSet].image = new Image();    
+    skpTexture[whichSet].image.crossOrigin = ''; 
+    skpTexture[whichSet].image.onload = function () 
+    {
+        handleLoadedTexture(skpTexture[whichSet])
+    }
+    if(texture_path)
+        skpTexture[whichSet].image.src = "https://ncsucgclass.github.io/prog3/" + texture_path;
+    console.log(texture_path);
+}
+
+var kpTexture = [];
+var skpTexture = [];
+function handleLoadedTexture(texture) 
+{
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+    // var texture = gl.createTexture();
+    // gl.bindTexture(gl.TEXTURE_2D, texture);
+    
+}
+
+
+/// Output might be horizontally flipped
