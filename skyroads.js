@@ -995,9 +995,9 @@ function renderModels() {
         gl.uniformMatrix4fv(pvmMatrixULoc, false, hpvmMatrix); // pass in handed project view model matrix
 
         // reflectivity: feed to the fragment shader
-        if (sphere.on)
-            currentMaterial = highlightMaterial;
-        else
+        // if (sphere.on)
+        //     currentMaterial = highlightMaterial;
+        // else
             currentMaterial = sphere;
         gl.uniform3fv(ambientULoc,currentMaterial.ambient); // pass in the ambient reflectivity
         gl.uniform3fv(diffuseULoc,currentMaterial.diffuse); // pass in the diffuse reflectivity
