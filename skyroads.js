@@ -802,9 +802,9 @@ function renderModels() {
         // define model transform, premult with pvmMatrix, feed to shader
         makeModelTransform(sphere);
 
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        gl.enable(gl.BLEND);
-        gl.depthMask(false);
+        // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        // gl.enable(gl.BLEND);
+        // gl.depthMask(false);
         gl.uniform1f(alphaUniform, sphere.alpha);
         if(sphere.texture)
         {
