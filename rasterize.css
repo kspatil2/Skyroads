@@ -19,10 +19,17 @@
     z-index: 20;
 }
 
-#status
+#mission
 {
     position: absolute;
     left: 0px;
-    top: 520px;
+    top: 510px;
+    z-index: 20;
+}
+#status
+{
+    position: absolute;
+    left: 512px;
+    top: 0px;
     z-index: 20;
 }
