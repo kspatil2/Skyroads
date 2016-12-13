@@ -6,7 +6,8 @@
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/24acb"; // Map#3
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/2gs71"; // Current 
 //const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/3mtmn"; // 2 levels 
-const INPUT_TRIANGLES_URL ="https://kspatil2.github.io/texture_road.json";
+// const INPUT_TRIANGLES_URL ="https://kspatil2.github.io/texture_road.json";
+const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/1a9n49";
 const INPUT_SPHERES_URL = "https://kspatil2.github.io/spaceship1.json"; // spheres file loc
 var defaultEye = vec3.fromValues(0.5,0.8,-1); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.8,0.5); // default view direction in world space
@@ -64,8 +65,8 @@ var freefall_velocity=0;
 var sideJump=0.0; // flag if in jumping
 var sidejumpTime=1; // half total time of jump till the top
 var sideJumpCounter=0; // time = t
-var sidejumpVelocity=0.025; // v = u0
-var sidegravity = 0.025;
+var sidejumpVelocity=0.05; // v = u0
+var sidegravity = 0.05;
 var left=0,right=0;
 // var freeFallTime=0;
 // var freefall_velocity=0;
@@ -768,7 +769,7 @@ function renderModels() {
 
         gl.uniform1f(alphaUniform, inputTriangles[whichTriSet].material.alpha);
         // console.log(inputTriangles[whichTriSet].material.texture);
-        if(true)
+        if(inputTriangles[whichTriSet].material.texture)
         {
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, kpTexture[whichTriSet]);
@@ -1044,11 +1045,11 @@ function renderModels() {
             else if(transition_init_flag==0)
             {
                 // console.log("pappu");
-                var offset = vec3.fromValues(10,0,0);
+                var offset = vec3.fromValues(20,0,0);
                 Center = vec3.add(Center,defaultCenter,vec3.scale(offset,offset,level_completed)); 
                 Eye = vec3.add(Eye,defaultEye,offset);
-                Eye[2]=Eye[2]+150;
-                Center[2]=Center[2]+150;
+                Eye[2]=Eye[2]+250;
+                Center[2]=Center[2]+250;
                 transition_init_flag=1;
             }
             else
@@ -1083,12 +1084,12 @@ function renderModels() {
                 // window.alert("New High Score:"+score);
             }
             
-            if(Eye[2] >= 150)
+            if(Eye[2] >= 250)
             {
                 current_score = current_score+score; 
                 level_completed=level_completed+1; // add +1 till 10
                 // console.log(level_completed);
-                var offset = vec3.fromValues(10,0,0);
+                var offset = vec3.fromValues(20,0,0);
                 if(level_completed<NUMBER_OF_LEVELS)
                 {
                     sphere.translation = vec3.add(sphere.translation,vec3.fromValues(0,0,0),vec3.scale(offset,offset,level_completed));
@@ -1192,7 +1193,7 @@ var ship_Z_before;
 function check_Dead_or_Alive(sphere_front,sphere_center, inputTriangles)
 {
     var length = inputTriangles.length;
-    var closest_surface = 200;
+    var closest_surface = 400;
     // console.log("sphere_front",sphere_front);
     for(var i = 0; i < length; i++)
     {
@@ -1219,7 +1220,7 @@ function check_Dead_or_Alive(sphere_front,sphere_center, inputTriangles)
     }
     // console.log("surface : ",surface);
     ship_Z_before=sphere_center[2];
-    if(closest_surface!=200)
+    if(closest_surface!=400)
         return closest_surface;
     else
         return 0;       
@@ -1264,7 +1265,7 @@ function restart_level(sphere)
     Center = vec3.fromValues(Center[0],defaultCenter[1],defaultCenter[2]); // view direction in world space
     Up = vec3.clone(defaultUp); // view up vector in world space
     Score=0;
-    var offset = vec3.fromValues(10*level_completed,0,0);
+    var offset = vec3.fromValues(20*level_completed,0,0);
     sphere.translation = vec3.add(sphere.translation,vec3.fromValues(0,0,0),offset); 
     velocity=0;
 }
