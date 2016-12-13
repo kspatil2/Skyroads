@@ -7,7 +7,8 @@
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/2gs71"; // Current 
 //const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/3mtmn"; // 2 levels 
 // const INPUT_TRIANGLES_URL ="https://kspatil2.github.io/texture_road.json";
-const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/1a9n49";
+//const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/1a9n49";
+const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/kr07h";
 const INPUT_SPHERES_URL = "https://kspatil2.github.io/spaceship1.json"; // spheres file loc
 var defaultEye = vec3.fromValues(0.5,0.8,-1); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.8,0.5); // default view direction in world space
@@ -65,8 +66,8 @@ var freefall_velocity=0;
 var sideJump=0.0; // flag if in jumping
 var sidejumpTime=1; // half total time of jump till the top
 var sideJumpCounter=0; // time = t
-var sidejumpVelocity=0.05; // v = u0
-var sidegravity = 0.05;
+var sidejumpVelocity=0.04; // v = u0
+var sidegravity = 0.04;
 var left=0,right=0;
 // var freeFallTime=0;
 // var freefall_velocity=0;
@@ -197,105 +198,105 @@ function handleKeyDown(event) {
             break;
             
         // view change
-        case "KeyA": // translate view left, rotate left with shift
-            Center = vec3.add(Center,Center,vec3.scale(temp,viewRight,viewDelta));
-            if (!event.getModifierState("Shift"))
-                Eye = vec3.add(Eye,Eye,vec3.scale(temp,viewRight,viewDelta));
-            break;
-        case "KeyD": // translate view right, rotate right with shift
-            Center = vec3.add(Center,Center,vec3.scale(temp,viewRight,-viewDelta));
-            if (!event.getModifierState("Shift"))
-                Eye = vec3.add(Eye,Eye,vec3.scale(temp,viewRight,-viewDelta));
-            break;
-        case "KeyS": // translate view backward, rotate up with shift
-            if (event.getModifierState("Shift")) {
-                Center = vec3.add(Center,Center,vec3.scale(temp,Up,viewDelta));
-                Up = vec.cross(Up,viewRight,vec3.subtract(lookAt,Center,Eye)); /* global side effect */
-            } else {
-                Eye = vec3.add(Eye,Eye,vec3.scale(temp,lookAt,-viewDelta));
-                Center = vec3.add(Center,Center,vec3.scale(temp,lookAt,-viewDelta));
-            } // end if shift not pressed
-            break;
-        case "KeyW": // translate view forward, rotate down with shift
-            if (event.getModifierState("Shift")) {
-                Center = vec3.add(Center,Center,vec3.scale(temp,Up,-viewDelta));
-                Up = vec.cross(Up,viewRight,vec3.subtract(lookAt,Center,Eye)); /* global side effect */
-            } else {
-                Eye = vec3.add(Eye,Eye,vec3.scale(temp,lookAt,viewDelta));
-                Center = vec3.add(Center,Center,vec3.scale(temp,lookAt,viewDelta));
-            } // end if shift not pressed
-            break;
-        case "KeyQ": // translate view up, rotate counterclockwise with shift
-            if (event.getModifierState("Shift"))
-                Up = vec3.normalize(Up,vec3.add(Up,Up,vec3.scale(temp,viewRight,-viewDelta)));
-            else {
-                Eye = vec3.add(Eye,Eye,vec3.scale(temp,Up,viewDelta));
-                Center = vec3.add(Center,Center,vec3.scale(temp,Up,viewDelta));
-            } // end if shift not pressed
-            break;
-        case "KeyE": // translate view down, rotate clockwise with shift
-            if (event.getModifierState("Shift"))
-                Up = vec3.normalize(Up,vec3.add(Up,Up,vec3.scale(temp,viewRight,viewDelta)));
-            else {
-                Eye = vec3.add(Eye,Eye,vec3.scale(temp,Up,-viewDelta));
-                Center = vec3.add(Center,Center,vec3.scale(temp,Up,-viewDelta));
-            } // end if shift not pressed
-            break;
-        case "Escape": // reset view to default
-            Eye = vec3.copy(Eye,defaultEye);
-            Center = vec3.copy(Center,defaultCenter);
-            Up = vec3.copy(Up,defaultUp);
-            break;
+        // case "KeyA": // translate view left, rotate left with shift
+            // Center = vec3.add(Center,Center,vec3.scale(temp,viewRight,viewDelta));
+            // if (!event.getModifierState("Shift"))
+                // Eye = vec3.add(Eye,Eye,vec3.scale(temp,viewRight,viewDelta));
+            // break;
+        // case "KeyD": // translate view right, rotate right with shift
+            // Center = vec3.add(Center,Center,vec3.scale(temp,viewRight,-viewDelta));
+            // if (!event.getModifierState("Shift"))
+                // Eye = vec3.add(Eye,Eye,vec3.scale(temp,viewRight,-viewDelta));
+            // break;
+        // case "KeyS": // translate view backward, rotate up with shift
+            // if (event.getModifierState("Shift")) {
+                // Center = vec3.add(Center,Center,vec3.scale(temp,Up,viewDelta));
+                // Up = vec.cross(Up,viewRight,vec3.subtract(lookAt,Center,Eye)); /* global side effect */
+            // } else {
+                // Eye = vec3.add(Eye,Eye,vec3.scale(temp,lookAt,-viewDelta));
+                // Center = vec3.add(Center,Center,vec3.scale(temp,lookAt,-viewDelta));
+            // } // end if shift not pressed
+            // break;
+        // case "KeyW": // translate view forward, rotate down with shift
+            // if (event.getModifierState("Shift")) {
+                // Center = vec3.add(Center,Center,vec3.scale(temp,Up,-viewDelta));
+                // Up = vec.cross(Up,viewRight,vec3.subtract(lookAt,Center,Eye)); /* global side effect */
+            // } else {
+                // Eye = vec3.add(Eye,Eye,vec3.scale(temp,lookAt,viewDelta));
+                // Center = vec3.add(Center,Center,vec3.scale(temp,lookAt,viewDelta));
+            // } // end if shift not pressed
+            // break;
+        // case "KeyQ": // translate view up, rotate counterclockwise with shift
+            // if (event.getModifierState("Shift"))
+                // Up = vec3.normalize(Up,vec3.add(Up,Up,vec3.scale(temp,viewRight,-viewDelta)));
+            // else {
+                // Eye = vec3.add(Eye,Eye,vec3.scale(temp,Up,viewDelta));
+                // Center = vec3.add(Center,Center,vec3.scale(temp,Up,viewDelta));
+            // } // end if shift not pressed
+            // break;
+        // case "KeyE": // translate view down, rotate clockwise with shift
+            // if (event.getModifierState("Shift"))
+                // Up = vec3.normalize(Up,vec3.add(Up,Up,vec3.scale(temp,viewRight,viewDelta)));
+            // else {
+                // Eye = vec3.add(Eye,Eye,vec3.scale(temp,Up,-viewDelta));
+                // Center = vec3.add(Center,Center,vec3.scale(temp,Up,-viewDelta));
+            // } // end if shift not pressed
+            // break;
+        // case "Escape": // reset view to default
+            // Eye = vec3.copy(Eye,defaultEye);
+            // Center = vec3.copy(Center,defaultCenter);
+            // Up = vec3.copy(Up,defaultUp);
+            // break;
             
-        // model transformation
-        case "KeyK": // translate left, rotate left with shift
-            if (event.getModifierState("Shift"))
-                rotateModel(Up,dirEnum.NEGATIVE);
-            else
-                translateModel(vec3.scale(temp,viewRight,viewDelta));
-            break;
-        case "Semicolon": // translate right, rotate right with shift
-            if (event.getModifierState("Shift"))
-                rotateModel(Up,dirEnum.POSITIVE);
-            else
-                translateModel(vec3.scale(temp,viewRight,-viewDelta));
-            break;
-        case "KeyL": // translate backward, rotate up with shift
-            if (event.getModifierState("Shift"))
-                rotateModel(viewRight,dirEnum.POSITIVE);
-            else
-                translateModel(vec3.scale(temp,lookAt,-viewDelta));
-            break;
-        case "KeyO": // translate forward, rotate down with shift
-            if (event.getModifierState("Shift"))
-                rotateModel(viewRight,dirEnum.NEGATIVE);
-            else
-                translateModel(vec3.scale(temp,lookAt,viewDelta));
-            break;
-        case "KeyI": // translate up, rotate counterclockwise with shift 
-            if (event.getModifierState("Shift"))
-                rotateModel(lookAt,dirEnum.POSITIVE);
-            else
-                translateModel(vec3.scale(temp,Up,viewDelta));
-            break;
-        case "KeyP": // translate down, rotate clockwise with shift
-            if (event.getModifierState("Shift"))
-                rotateModel(lookAt,dirEnum.NEGATIVE);
-            else
-                translateModel(vec3.scale(temp,Up,-viewDelta));
-            break;
-        case "Backspace": // reset model transforms to default
-            for (var whichTriSet=0; whichTriSet<numTriangleSets; whichTriSet++) {
-                vec3.set(inputTriangles[whichTriSet].translation,0,0,0);
-                vec3.set(inputTriangles[whichTriSet].xAxis,1,0,0);
-                vec3.set(inputTriangles[whichTriSet].yAxis,0,1,0);
-            } // end for all triangle sets
-            for (var whichSphere=0; whichSphere<numSpheres; whichSphere++) {
-                vec3.set(inputSpheres[whichSphere].translation,0,0,0);
-                vec3.set(inputSpheres[whichTriSet].xAxis,1,0,0);
-                vec3.set(inputSpheres[whichTriSet].yAxis,0,1,0);
-            } // end for all spheres
-            break;
+        // // model transformation
+        // case "KeyK": // translate left, rotate left with shift
+            // if (event.getModifierState("Shift"))
+                // rotateModel(Up,dirEnum.NEGATIVE);
+            // else
+                // translateModel(vec3.scale(temp,viewRight,viewDelta));
+            // break;
+        // case "Semicolon": // translate right, rotate right with shift
+            // if (event.getModifierState("Shift"))
+                // rotateModel(Up,dirEnum.POSITIVE);
+            // else
+                // translateModel(vec3.scale(temp,viewRight,-viewDelta));
+            // break;
+        // case "KeyL": // translate backward, rotate up with shift
+            // if (event.getModifierState("Shift"))
+                // rotateModel(viewRight,dirEnum.POSITIVE);
+            // else
+                // translateModel(vec3.scale(temp,lookAt,-viewDelta));
+            // break;
+        // case "KeyO": // translate forward, rotate down with shift
+            // if (event.getModifierState("Shift"))
+                // rotateModel(viewRight,dirEnum.NEGATIVE);
+            // else
+                // translateModel(vec3.scale(temp,lookAt,viewDelta));
+            // break;
+        // case "KeyI": // translate up, rotate counterclockwise with shift 
+            // if (event.getModifierState("Shift"))
+                // rotateModel(lookAt,dirEnum.POSITIVE);
+            // else
+                // translateModel(vec3.scale(temp,Up,viewDelta));
+            // break;
+        // case "KeyP": // translate down, rotate clockwise with shift
+            // if (event.getModifierState("Shift"))
+                // rotateModel(lookAt,dirEnum.NEGATIVE);
+            // else
+                // translateModel(vec3.scale(temp,Up,-viewDelta));
+            // break;
+        // case "Backspace": // reset model transforms to default
+            // for (var whichTriSet=0; whichTriSet<numTriangleSets; whichTriSet++) {
+                // vec3.set(inputTriangles[whichTriSet].translation,0,0,0);
+                // vec3.set(inputTriangles[whichTriSet].xAxis,1,0,0);
+                // vec3.set(inputTriangles[whichTriSet].yAxis,0,1,0);
+            // } // end for all triangle sets
+            // for (var whichSphere=0; whichSphere<numSpheres; whichSphere++) {
+                // vec3.set(inputSpheres[whichSphere].translation,0,0,0);
+                // vec3.set(inputSpheres[whichTriSet].xAxis,1,0,0);
+                // vec3.set(inputSpheres[whichTriSet].yAxis,0,1,0);
+            // } // end for all spheres
+            // break;
     } // end switch
 } // end handleKeyDown
 
@@ -306,15 +307,15 @@ function setupWebGL() {
     
     // Set up keys
     document.onkeydown = handleKeyDown; // call this when key pressed
-
+	
+	
+	
     // look up the text canvas.
     var textCanvas = document.getElementById("text");
     timeNode = document.createTextNode("");
     textCanvas.appendChild(timeNode);
     // make a 2D context for it
     ctx = textCanvas.getContext("2d");
-
-
 
     // Get the image canvas, render an image in it
     var imageCanvas = document.getElementById("myImageCanvas"); // create a 2d canvas
@@ -1097,10 +1098,12 @@ function renderModels() {
                     // Center = vec3.add(Center,defaultCenter,offset); 
                     // Eye = vec3.add(Eye,defaultEye,offset);
                     velocity=0;
-                    window.alert("LEVEL COMPLETED");   
+					document.getElementById("status").innerHTML = "THE FORCE IS STRONG WITH YOU. LEVEL COMPLETED";
+                    //window.alert("LEVEL COMPLETED");   
                 }
                 else
-                    window.alert("GAME COMPLETED");      
+                    //window.alert("GAME COMPLETED");      
+				document.getElementById("status").innerHTML = "THE DEATH STAR HAS BEEN DESTROYED. GAME COMPLETED";
 
             }   
             else
@@ -1108,7 +1111,8 @@ function renderModels() {
                 restart_level(sphere);
                 restart=0;
                 future_collision=0;
-                window.alert("GAME OVER");
+                window.alert("TRY AGAIN");
+				document.getElementById("status").innerHTML = "YOU DON'T HAVE CONTROL OVER THE FORCE. TRY AGAIN";
             }
         }
 

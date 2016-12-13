@@ -18,3 +18,11 @@
     top: 0px;
     z-index: 20;
 }
+
+#status
+{
+    position: absolute;
+    left: 0px;
+    top: 520px;
+    z-index: 20;
+}
