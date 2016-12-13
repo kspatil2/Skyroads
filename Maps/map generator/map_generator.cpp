@@ -33,7 +33,7 @@ int main()
 	myfile << "[\n";
 	for(int i=0; i<num_of_objects;i++)
 	{
-		cout << "## NEW OBJECT ##\n";
+		cout << "## NEW OBJECT "<< i<<"\n";
 		cout << "Enter color : ";
 		for(int j=0; j<3;j++)
 		{
