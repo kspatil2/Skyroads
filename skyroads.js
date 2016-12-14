@@ -157,7 +157,9 @@ function handleKeyDown(event) {
         // model selection
         case "Space":
                 if(spaceJump!=1) // ensure no jump called between another jump 
-                {   
+                {
+                    // sound for jump    
+                    playSound("jump",true);
                     spaceJump=1;
                     spaceJumpCounter=0.0;
                 }
@@ -193,6 +195,7 @@ function handleKeyDown(event) {
                     velocity = velocity - deacceleration*time;
                     if(velocity<0)
                         velocity=0;
+
                 }
                 
             break;
@@ -341,10 +344,13 @@ function setupWebGL() {
       }
     } // end try
     
+
     catch(e) {
       console.log(e);
     } // end catch
  
+
+    initSound();
 } // end setupWebGL
 
 // read models in, load them into webgl buffers
@@ -538,6 +544,8 @@ function loadModels() {
     catch(e) {
         console.log(e);
     } // end catch
+
+    playSound("mainTheme",true);
 } // end load models
 
 // setup the webGL shaders
@@ -1332,6 +1340,29 @@ function handleLoadedTexture(texture)
     // gl.bindTexture(gl.TEXTURE_2D, texture);
     
 }
+var sound =[];
+function initSound()
+{
+    sound.push(new Audio("./Sound/dp_starwars_darkside.mp3"));
+    sound.push(new Audio("./Sound/dp_starwars_theme.mp3"));
+}
 
+function playSound(id,flag)
+{
+    switch(id)
+    {
+        case "mainTheme": sound[0].loop = flag; sound[0].play(); break;
+        case "jump": sound[1].play(); break;
+    }
 
-/// Output might be horizontally flipped
+}
+
+//stop
+function stopSound(id)
+{
+    switch(id)
+    {
+        case "mainTheme": sound[0].pause();sound.currentTime=0 ; break;
+        case "jump": sound[1].pause(); break;
+    }    
+}
