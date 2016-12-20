@@ -7,8 +7,8 @@
 // const INPUT_TRIANGLES_URL = "https://api.myjson.com/bins/2gs71"; // Current 
 //const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/3mtmn"; // 2 levels 
 // const INPUT_TRIANGLES_URL ="https://kspatil2.github.io/texture_road.json";
-//const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/1a9n49";
-const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/kr07h";
+//const INPUT_TRIANGLES_URL ="https://api.myjson.com/bins/kpla5";
+const INPUT_TRIANGLES_URL ="https://kspatil2.github.io/till4.json";
 const INPUT_SPHERES_URL = "https://kspatil2.github.io/spaceship1.json"; // spheres file loc
 var defaultEye = vec3.fromValues(0.5,0.8,-1); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.8,0.5); // default view direction in world space
@@ -71,7 +71,7 @@ var sidegravity = 0.04;
 var left=0,right=0;
 // var freeFallTime=0;
 // var freefall_velocity=0;
-var NUMBER_OF_LEVELS = 5;
+var NUMBER_OF_LEVELS = 4;
 var Score=0;
 var HighScore = 0;
 
@@ -545,7 +545,7 @@ function loadModels() {
         console.log(e);
     } // end catch
 
-    playSound("mainTheme",true);
+    playSound("level1",true);
 } // end load models
 
 // setup the webGL shaders
@@ -1038,6 +1038,11 @@ function renderModels() {
         ctx.fillText("Oxygen : "+oxygen_level.toFixed(0),2,60);
         ctx.fillText("Fuel : "+fuel_level.toFixed(0),2,80);
 
+		if(oxygen_level < 0 || fuel_level < 0)
+		{
+			window.alert("Game Over. Refresh to restart");
+		}
+		
         if(level_transition==1)
         {   
             if(temp_peak_velocity>0)
@@ -1097,6 +1102,9 @@ function renderModels() {
             {
                 current_score = current_score+score; 
                 level_completed=level_completed+1; // add +1 till 10
+				stopSound("level"+sound_count);
+				sound_count = sound_count+1;
+				playSound("level"+sound_count,true);
                 // console.log(level_completed);
                 var offset = vec3.fromValues(20,0,0);
                 if(level_completed<NUMBER_OF_LEVELS)
@@ -1116,10 +1124,11 @@ function renderModels() {
             }   
             else
             {
+				playSound("tryagain",true);
                 restart_level(sphere);
                 restart=0;
                 future_collision=0;
-                window.alert("TRY AGAIN");
+                // window.alert("TRY AGAIN");
 				document.getElementById("status").innerHTML = "YOU DON'T HAVE CONTROL OVER THE FORCE. TRY AGAIN";
             }
         }
@@ -1129,7 +1138,7 @@ function renderModels() {
 
 var oxygen_level=100;
 var fuel_level=200;
-
+var sound_count = 1;
 var freefall_flag=0;
 var time=-1;
 var future_collision=0;
@@ -1343,16 +1352,26 @@ function handleLoadedTexture(texture)
 var sound =[];
 function initSound()
 {
-    sound.push(new Audio("./Sound/dp_starwars_darkside.mp3"));
-    sound.push(new Audio("./Sound/dp_starwars_theme.mp3"));
+    sound.push(new Audio("level1.mp3"));
+    sound.push(new Audio("level2.mp3"));
+	sound.push(new Audio("level3.mp3"));
+	sound.push(new Audio("level4.mp3"));
+	sound.push(new Audio("level5.mp3"));
+	sound.push(new Audio("tryagain.mp3"));
+	sound.push(new Audio("jump.wav"));
 }
 
 function playSound(id,flag)
 {
     switch(id)
     {
-        case "mainTheme": sound[0].loop = flag; sound[0].play(); break;
-        case "jump": sound[1].play(); break;
+        case "level1": sound[0].loop = flag; sound[0].play(); break;
+        case "level2": sound[1].loop = flag; sound[1].play(); break;
+		case "level3": sound[2].loop = flag; sound[2].play(); break;
+		case "level4": sound[3].loop = flag; sound[3].play(); break;
+		case "level5": sound[4].loop = flag; sound[4].play(); break;
+		case "tryagain": sound[5].play();
+		case "jump": sound[6].play();
     }
 
 }
@@ -1362,7 +1381,10 @@ function stopSound(id)
 {
     switch(id)
     {
-        case "mainTheme": sound[0].pause();sound.currentTime=0 ; break;
-        case "jump": sound[1].pause(); break;
+        case "level1": sound[0].pause();sound.currentTime=0 ; break;
+		case "level2": sound[1].pause();sound.currentTime=0 ; break;
+		case "level3": sound[2].pause();sound.currentTime=0 ; break;
+		case "level4": sound[3].pause();sound.currentTime=0 ; break;
+		case "level5": sound[4].pause();sound.currentTime=0 ; break;        
     }    
 }
