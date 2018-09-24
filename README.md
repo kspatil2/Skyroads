@@ -2,6 +2,10 @@
 
 SkyRoads is a game implemented in Webgl and Javascript.
 
+<p align="left">
+<img src="https://raw.githubusercontent.com/Kshitij-Patil/Skyroads/master/images/skyroads.png" width="480" height="360" border="10">
+ </p>
+ 
 DESCRIPTION
 The main objective of the game is to clear four levels of skymaps before you run out of Oxygen or Fuel. You can use the Up key to 
 accelerate and down key to deaccelerate the spaceship.The spaceship jumps on pressing the spacebar and moves left or right using 
